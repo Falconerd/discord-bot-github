@@ -1,6 +1,12 @@
 # discord-bot-github
 A bot for discord which consumes the GitHub API and gives you updates.
 
+## Features
+- [x] Sweet avatar
+- [ ] Multiple Discord servers
+- [ ] Multiple Discord channels
+- [ ] Customise events subscribed to on a per-channel basis
+
 ## Events
 - [ ] __CommitCommentEvent__ - Triggered when a commit comment is created.
 - [ ] __CreateEvent__ - Represents a created repository, branch, or tag.
