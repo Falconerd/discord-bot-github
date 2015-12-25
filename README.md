@@ -15,7 +15,7 @@ A bot for discord which consumes the GitHub API and gives you updates.
 - [ ] __MembershipEvent__ - Triggered when a user is added or removed from a team.
 - [ ] __PageBuildEvent__ - Represents an attempted build of a GitHub Pages site, whether successful or not.
 - [ ] __PublicEvent__ - Triggered when a private repository is open sourced. Without a doubt: the best GitHub event.
-- [ ] __PullRequestEvent__ - Triggered when a pull request is assigned, unassigned, labeled, unlabeled, opened, closed, reopened, or synchronized.Triggered when a pull request is assigned, unassigned, labeled, unlabeled, opened, closed, reopened, or synchronized.
+- [ ] __PullRequestEvent__ - Triggered when a pull request is assigned, unassigned, labeled, unlabeled, opened, closed, reopened, or synchronized.
 - [ ] __PullRequestReviewCommentEvent__ - Triggered when a comment is created on a portion of the unified diff of a pull request.
 - [x] __PushEvent__ - Triggered when a repository branch is pushed to. In addition to branch pushes, webhook push events are also triggered when repository tags are pushed.
 - [ ] __ReleaseEvent__ - Triggered when a release is published.
