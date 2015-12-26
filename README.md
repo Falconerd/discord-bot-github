@@ -3,13 +3,13 @@ A bot for discord which consumes the GitHub API and gives you updates.
 
 ## Features
 - [x] Sweet avatar
-- [ ] Multiple Discord servers
-- [ ] Multiple Discord channels
-- [ ] Customise events subscribed to on a per-channel basis
+- [x] Multiple Discord servers (Needs testing)
+- [x] Multiple Discord channels (Needs testing)
+- [x] Customise events subscribed to on a per-channel basis (Needs testing)
 
 ## Events
 - [ ] __CommitCommentEvent__ - Triggered when a commit comment is created.
-- [ ] __CreateEvent__ - Represents a created repository, branch, or tag.
+- [x] __CreateEvent__ - Represents a created repository, branch, or tag.
 - [ ] __DeleteEvent__ - Represents a deleted branch or tag.
 - [ ] __DeploymentEvent__ - Represents a deployment.
 - [ ] __DeploymentStatusEvent__ - Represents a deployment status.
