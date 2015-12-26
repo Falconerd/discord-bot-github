@@ -13,7 +13,7 @@ A bot for discord which consumes the GitHub API and gives you updates.
 ## Setup
 
 - `mv config.example.js config.js`
-- Edit confiuration file to suit your needs. See config section below.
+- Edit configuration file to suit your needs. See config section below.
 - `git clone https://github.com/Falconerd/discord-bot-github.git`
 - `cd discord-bot-github`
 - `node .`
