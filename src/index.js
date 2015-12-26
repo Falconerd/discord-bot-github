@@ -3,6 +3,9 @@
  * @NOTE
  * There is a bit of stuff in here which I think could really benefit from a
  * better understanding of Promises. Someone help me :(
+ *
+ * There is also some really gross stuff where varialbles are being passed to
+ * like 5 functions before being used...
  */
 
 const Discord = require('discord.js');
@@ -157,27 +160,38 @@ function eventPollFailure (error) {
  * @param  {[type]} data      Response data
  */
 function constructMessageObject (id, name, invite, data) {
-    console.log(id, name, data.type);
     let messageObject;
     switch (data.type) {
     case 'PushEvent':
-        console.log('case PushEvent');
         if (data.payload.size === 1) {
-            console.log('data.payload.size === 1');
             messageObject = messageTemplates.pushEventSingle(data);
         } else {
             messageObject = messageTemplates.pushEventMultiple(data);
         }
         break;
+    case 'CreateEvent':
+        if (data.payload.ref_type === 'branch') {
+            messageObject = messageTemplates.createEventBranch(data);
+        } else if (data.payload.ref_type === 'tag') {
+            messageObject = messageTemplates.createEventTag(data);
+        }
+        break;
+    case 'PullRequestEvent':
+        if (data.payload.action === 'opened') {
+            messageObject = messageTemplates.pullRequestEventOpened(data);
+        }
+        break;
     default:
         return false;
     }
-
-    shortenUrls(messageObject.text, messageObject.urls, id, name);
+    if (messageObject.urls) {
+        shortenUrls(messageObject.text, messageObject.urls, id, name, invite);
+    } else {
+        finaliseMessage(messageObject.text, [], id, name, invite);
+    }
 }
 
 function shortenUrls (text, urls, id, name, invite) {
-    console.log('shortenUrls', text, urls);
     const shortUrls = [];
     for (let i = 0; i < urls.length; i++) {
         shortenUrl(urls[i], (response) => {
