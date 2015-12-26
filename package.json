@@ -28,6 +28,6 @@
   "devDependencies": {},
   "dependencies": {
     "axios": "^0.8.1",
-    "discord.js": "^5.2.0",
+    "discord.js": "^5.2.0"
   }
 }
