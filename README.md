@@ -16,6 +16,7 @@ A bot for discord which consumes the GitHub API and gives you updates.
 - Edit configuration file to suit your needs. See config section below.
 - `git clone https://github.com/Falconerd/discord-bot-github.git`
 - `cd discord-bot-github`
+- `npm install`
 - `node .`
 
 ## Features
