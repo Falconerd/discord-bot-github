@@ -1,12 +1,14 @@
 'use strict';
 /**
- * This is some ugly ass code :(
- * @TODO Clean it up, somehow
+ * @NOTE
+ * There is a bit of stuff in here which I think could really benefit from a
+ * better understanding of Promises. Someone help me :(
  */
 
 const Discord = require('discord.js');
 const axios = require('axios');
 const config = require('../config');
+const messageTemplates = require('./messageTemplates');
 
 /**
  * This object will hold the id and etags of each repository.
@@ -73,6 +75,7 @@ function loop () {
         for (const repo of subscription.repositories) {
             const id = subscription.server_id;
             const name = subscription.channel_name;
+            const invite = subscription.invite;
             let headers = {
                 'Authorization': `token ${config.github.token}`
             };
@@ -82,7 +85,7 @@ function loop () {
             axios.get(`https://api.github.com/repos/${repo.user}/${repo.name}/events`, {
                 headers
             })
-                .then((response) => eventPollSuccess(id, name, repo, response))
+                .then((response) => eventPollSuccess(id, name, repo, invite, response))
                 .catch(eventPollFailure);
         }
     }
@@ -93,7 +96,7 @@ function loop () {
  * @param  {Object} repo         The repo which has changed.
  * @param  {Object} response     The response sent from GitHub
  */
-function eventPollSuccess (id, name, repo, response) {
+function eventPollSuccess (id, name, repo, invite, response) {
     if (!response.status === 200) {
         return console.error('Wrong response code', response.status);
     }
@@ -122,7 +125,7 @@ function eventPollSuccess (id, name, repo, response) {
 
     // Only post a message about changes if this was defined.
     if (etags[repo.id]) {
-        sendMessage(id, name, repo, response.data[0]);
+        constructMessageObject(id, name, invite, response.data[0]);
     }
 
     etags[repo.id] = response.headers.etag;
@@ -147,40 +150,94 @@ function eventPollFailure (error) {
     err(error);
 }
 
-function sendMessage (id, name, repo, data) {
-    const channel = getChannel(id, name);
-    const message = composeMessage(data);
-    bot.sendMessage(channel, message, (error, message) => {
-        if (error) return err(error);
-        messageSuccess(message);
-    });
-}
-
-function getChannel (id, name) {
-    const channelName = name.replace('#', '').toLowerCase();
-    for (const server of bot.servers) {
-        for (const channel of server.channels) {
-            if (channel.name === channelName) {
-                return channel;
-            }
-        }
-    }
-    console.error('Channel not found!');
-    return false;
-}
-
 /**
- * This is proably going to be the most complicated function...
- * @param  {Object} data The data required to compose the message. Plus some extra...
- * @return {String}      The message to post.
+ * [constructMessageObject description]
+ * @param  {Number|String} id Server id
+ * @param  {[type]} name      Channel name
+ * @param  {[type]} data      Response data
  */
-function composeMessage (data) {
+function constructMessageObject (id, name, invite, data) {
+    console.log(id, name, data.type);
+    let messageObject;
     switch (data.type) {
     case 'PushEvent':
-        return 'Push event!';
+        console.log('case PushEvent');
+        if (data.payload.size === 1) {
+            console.log('data.payload.size === 1');
+            messageObject = messageTemplates.pushEventSingle(data);
+        } else {
+            messageObject = messageTemplates.pushEventMultiple(data);
+        }
+        break;
     default:
         return false;
     }
+
+    shortenUrls(messageObject.text, messageObject.urls, id, name);
+}
+
+function shortenUrls (text, urls, id, name, invite) {
+    console.log('shortenUrls', text, urls);
+    const shortUrls = [];
+    for (let i = 0; i < urls.length; i++) {
+        shortenUrl(urls[i], (response) => {
+            shortUrls.push(response.data.id);
+            if (i === urls.length - 1) {
+                finaliseMessage(text, shortUrls, id, name, invite);
+            }
+        });
+    }
+}
+
+function finaliseMessage (text, urls, id, name, invite) {
+    let message = text.slice(0);
+    for (var i = 0; i < urls.length; i++) {
+        message = message.replace('#{' + i + '}', urls[i]);
+    }
+    if (!checkServer(id)) {
+        bot.joinServer(invite)
+            .then(sendMessage(message, name))
+            .catch(err);
+    } else {
+        sendMessage(message, name);
+    }
+}
+
+function sendMessage (message, name) {
+    const channel = getChannel(name);
+    if (channel) {
+        bot.sendMessage(channel, message)
+            .then(messageSuccess)
+            .catch(err);
+    }
+}
+
+function checkServer (serverId) {
+    for (const server of bot.servers) {
+        if (server.id === serverId) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function getChannel (name) {
+    for (const channel of bot.channels) {
+        if (channel.name === name) {
+            return channel;
+        }
+    }
+    return false;
+}
+
+function shortenUrl (url, callback) {
+    axios.post(`https://www.googleapis.com/urlshortener/v1/url?key=${config.google.key}`, {
+        headers: { 'Content-Type': 'application/json' },
+        longUrl: url
+    })
+    .then(callback)
+    .catch(err);
 }
 
 function messageSuccess () {
