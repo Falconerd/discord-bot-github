@@ -10,7 +10,7 @@ A bot for discord which consumes the GitHub API and gives you updates.
 
 ## Events
 - [ ] __CommitCommentEvent__ - Triggered when a commit comment is created.
-- [x] __CreateEvent__ - Represents a created repository, branch, or tag. (-repository until can subscribe to users)
+- [x] __CreateEvent__ - Represents a created ~~repository~~, branch, or tag. (leave repository until we can subscribe to users)
 - [ ] __DeleteEvent__ - Represents a deleted branch or tag.
 - [ ] __DeploymentEvent__ - Represents a deployment.
 - [ ] __DeploymentStatusEvent__ - Represents a deployment status.
