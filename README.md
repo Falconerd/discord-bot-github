@@ -1,8 +1,6 @@
 # discord-bot-github
 > A bot for discord which consumes the GitHub API and gives you updates.
 
-_Disregard these status icons for now, it does work! I'm just trying to get it all proper-like._
-
 [![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=master)](https://travis-ci.org/Falconerd/discord-bot-github) [![Coverage Status](https://coveralls.io/repos/Falconerd/discord-bot-github/badge.svg?branch=master&service=github)](https://coveralls.io/github/Falconerd/discord-bot-github?branch=master)
 
 ## Preview
