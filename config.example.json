@@ -1,7 +1,7 @@
 {
     "interval": 5000,
     "google": {
-        "key": "your-key-here"
+        "key": "your-api-key-here"
     },
     "github": {
         "token": "your-token-here"
