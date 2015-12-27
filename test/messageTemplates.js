@@ -33,6 +33,7 @@ describe('messageTemplates', () => {
     const data = {
       repo: { name: 'Istocha/test-repo' },
       payload: {
+        size: 2,
         ref: 'a/b/master',
         commits: [
           {
