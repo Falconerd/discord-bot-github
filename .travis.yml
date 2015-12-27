@@ -1,4 +1,6 @@
 language: node_js
 node_js:
   - "5.3"
-  - "4.1"
+  - "4.2"
+script: "npm run test-travis"
+after_script: "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"

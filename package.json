@@ -4,7 +4,8 @@
   "description": "A bot for discord which consumes the GitHub API and gives you updates.",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha ./test/*",
+    "test-travis": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -R spec ./test/*"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,12 @@
     "url": "https://github.com/Falconerd/discord-bot-github/issues"
   },
   "homepage": "https://github.com/Falconerd/discord-bot-github#readme",
-  "devDependencies": {},
+  "devDependencies": {
+    "coveralls": "^2.11.6",
+    "istanbul": "^0.4.1",
+    "mocha": "^2.3.4",
+    "should": "^8.0.2"
+  },
   "dependencies": {
     "axios": "^0.8.1",
     "discord.js": "^5.2.0"
