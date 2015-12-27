@@ -2,22 +2,24 @@
 A bot for discord which consumes the GitHub API and gives you updates.
 
 ## Preview
-
 ![GitHub bot in Discord](http://i.imgur.com/hjwC1UG.png)
 
 ## Requirements
-
 - NodeJs
 - NPM
 
 ## Setup
+`mv config.example.js config.js`
 
-- `mv config.example.js config.js`
-- Edit configuration file to suit your needs. See config section below.
-- `git clone https://github.com/Falconerd/discord-bot-github.git`
-- `cd discord-bot-github`
-- `npm install`
-- `node .`
+Edit configuration file to suit your needs. See config section below.
+
+`git clone https://github.com/Falconerd/discord-bot-github.git`
+
+`cd discord-bot-github`
+
+`npm install`
+
+`node .`
 
 ## Features
 - [x] Sweet avatar
@@ -65,7 +67,6 @@ A bot for discord which consumes the GitHub API and gives you updates.
 - [ ] __WatchEvent__ - The WatchEvent is related to starring a repository, not watching.
 
 ## Config
-
 | Key                | Description
 | ------------------ | -----------
 | `interval`         | Time in milliseconds to check the GitHub API.
@@ -76,7 +77,6 @@ A bot for discord which consumes the GitHub API and gives you updates.
 | `subscriptions`    |  Array of subscriptions. Each subscription is made up of several parts outlined below.
 
 ### Subscriptions
-
 | Key            | Description
 | -------------- | -----------
 | `server_id`    | The discord server ID. You can obtain this from Discord's settings under Server Settings > Widgets.
@@ -85,7 +85,6 @@ A bot for discord which consumes the GitHub API and gives you updates.
 | `repositories` | Array of repositories to monitor. Each repository is made up of several parts outlined below.
 
 ### Repositories
-
 | Key            | Description
 | ---------| -----------
 | `user`   | Github username.
