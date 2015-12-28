@@ -4,10 +4,11 @@
 	factory(global.axios,global.bunyan);
 }(this, function (axios,bunyan) { 'use strict';
 
-	var foo = {};
+	axios = 'default' in axios ? axios['default'] : axios;
+	bunyan = 'default' in bunyan ? bunyan['default'] : bunyan;
 
-	var log = bunyan.bunyan.createLogger({ name: 'discord-bot-github' });
+	var log = bunyan.createLogger({ name: 'discord-bot-github' });
 
-	log.info(axios.axios, foo);
+	log.info(axios);
 
 }));
