@@ -1,6 +1,8 @@
-import axios from 'axios';
-import bunyan from 'bunyan';
+import DiscordBotGithub from './discord-bot-github';
+import config from './config';
 
-const log = bunyan.createLogger({ name: 'discord-bot-github' });
+const bot = new DiscordBotGithub(config.discord.email, config.discord.password);
 
-log.info(axios);
+bot.start();
+
+export const summat = 'summat';

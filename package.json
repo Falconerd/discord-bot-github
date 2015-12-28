@@ -8,9 +8,11 @@
     "prebuild": "eslint lib test",
     "build": "rollup -c rollup.umd.config.js && rollup -c rollup.es2015.config.js",
     "pretest": "rollup -c rollup.test.config.js",
-    "test": "./node_modules/mocha/bin/mocha ./test/*",
-    "test-travis": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -R spec ./test/*",
-    "prepublish": "npm run build && npm test"
+    "test": "./node_modules/mocha/bin/mocha ./build/test-bundle.js",
+    "test-travis": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -R spec ./build/test-bundle.js",
+    "prepublish": "npm run build && npm test",
+    "preexec": "npm run build",
+    "exec": "node ."
   },
   "repository": {
     "type": "git",
@@ -36,6 +38,7 @@
     "babel-preset-es2015-rollup": "^1.0.0",
     "bunyan": "^1.5.1",
     "coveralls": "^2.11.6",
+    "discord.js": "^5.3.1",
     "eslint": "^1.10.3",
     "istanbul": "^0.4.1",
     "mocha": "^2.3.4",
@@ -46,6 +49,7 @@
   },
   "dependencies": {
     "axios": "^0.8.1",
+    "chalk": "^1.1.1",
     "discord.js": "^5.2.0"
   }
 }
