@@ -3,6 +3,16 @@
 
 [![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=master)](https://travis-ci.org/Falconerd/discord-bot-github) [![Coverage Status](https://coveralls.io/repos/Falconerd/discord-bot-github/badge.svg?branch=master&service=github)](https://coveralls.io/github/Falconerd/discord-bot-github?branch=master)
 
+## Notice
+I'm working on a user-friendly version of this bot designed for end-users.
+What this means is that it should be a matter of:
+Download the app →
+Enter your bot & server details →
+Configure the repositories to watch →
+Click run
+
+For now, the setup below will work fine.
+
 ## Preview
 ![GitHub bot in Discord](http://i.imgur.com/hjwC1UG.png)
 
