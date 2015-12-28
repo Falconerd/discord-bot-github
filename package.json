@@ -5,7 +5,7 @@
   "main": "dist/discord-bot-github.umd.js",
   "jsnext:main": "dist/discord-bot-github.es2015.js",
   "scripts": {
-    "prebuild": "eslint lib test",
+    "prebuild": "eslint src test",
     "build": "rollup -c rollup.umd.config.js && rollup -c rollup.es2015.config.js",
     "pretest": "rollup -c rollup.test.config.js",
     "test": "./node_modules/mocha/bin/mocha ./build/test-bundle.js",
