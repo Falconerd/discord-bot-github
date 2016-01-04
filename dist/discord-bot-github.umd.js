@@ -66,6 +66,24 @@
     }
   };
 
+  function push(data) {
+    var repo = data.repo.name;
+    var branch = data.payload.ref.split('/')[2];
+    var commit = data.payload.commits[0];
+    var name = commit.author.name;
+    var message = commit.message;
+    var sha = commit.sha;
+    var url = 'https://github.com/' + repo + '/commits/' + sha;
+    var content = '[' + repo + ':' + branch + '] 1 new comit by ' + name + ':';
+    content += '\n' + message + ' - ' + name;
+    content += '\n' + url;
+    return content;
+  }
+
+  var templates = {
+    push: push
+  };
+
   var DiscordBotGithub = (function () {
     function DiscordBotGithub(config) {
       babelHelpers.classCallCheck(this, DiscordBotGithub);
@@ -177,8 +195,6 @@
           try {
             for (var _iterator2 = subscription.servers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
               var server = _step2.value;
-
-              out.info('> 0');
               var _iteratorNormalCompletion3 = true;
               var _didIteratorError3 = false;
               var _iteratorError3 = undefined;
@@ -186,8 +202,6 @@
               try {
                 for (var _iterator3 = server.channels[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                   var channel = _step3.value;
-
-                  out.info('> 1');
                   var _iteratorNormalCompletion4 = true;
                   var _didIteratorError4 = false;
                   var _iteratorError4 = undefined;
@@ -196,9 +210,7 @@
                     for (var _iterator4 = channel.events[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
                       var eventType = _step4.value;
 
-                      out.info('> 2');
                       if (eventType === data.type.replace('Event', '')) {
-                        out.info('> 3');
                         // Event type is being tracked by this channel...
                         this.sendMessage(server.id, channel.name, data);
                       }
@@ -263,20 +275,25 @@
     }, {
       key: 'sendMessage',
       value: function sendMessage(id, name, data) {
-        out.info('> 4');
         // Construct the message from a template.
         var content = this.constructMessage(data);
-        out.info('> 5');
         // Get the channel ID
         var channelResolvable = this.getChannelResolvable(id, name);
-        out.info('> 6');
         // Send the message
         this.client.sendMessage(channelResolvable, content);
       }
     }, {
       key: 'constructMessage',
       value: function constructMessage(data) {
-        if (data) return 'Message!';
+        switch (data.type) {
+          case 'PushEvent':
+            if (data.payload.size === 1) {
+              return templates.push(data);
+            }
+            break;
+          default:
+            return 'Message!';
+        }
       }
     }, {
       key: 'getChannelResolvable',
@@ -289,7 +306,6 @@
           for (var _iterator5 = this.client.servers[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
             var server = _step5.value;
 
-            out.info('id: ' + server.id + ', ' + id);
             if (server.id === id) {
               var _iteratorNormalCompletion6 = true;
               var _didIteratorError6 = false;
@@ -299,7 +315,6 @@
                 for (var _iterator6 = server.channels[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
                   var channel = _step6.value;
 
-                  out.info('channel: ' + channel.type + ', ' + channel.name + ', ' + channel.id);
                   if (channel.type === 'text' && channel.name === name) {
                     return channel.id;
                   }

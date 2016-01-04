@@ -1,6 +1,7 @@
 import Discord from 'discord.js';
 import axios from 'axios';
 import out from './util/out';
+import templates from './templates';
 
 class DiscordBotGithub {
   constructor(config) {
@@ -72,13 +73,9 @@ class DiscordBotGithub {
       // given that the event is being traked by said channel.
       // @note: triple for-loop?
       for (let server of subscription.servers) {
-        out.info('> 0');
         for (let channel of server.channels) {
-        out.info('> 1');
           for (let eventType of channel.events) {
-        out.info('> 2');
             if (eventType === data.type.replace('Event', '')) {
-        out.info('> 3');
               // Event type is being tracked by this channel...
               this.sendMessage(server.id, channel.name, data);
             }
@@ -99,28 +96,49 @@ class DiscordBotGithub {
   }
 
   sendMessage(id, name, data) {
-        out.info('> 4');
     // Construct the message from a template.
     const content = this.constructMessage(data);
-        out.info('> 5');
     // Get the channel ID
     const channelResolvable = this.getChannelResolvable(id, name);
-        out.info('> 6');
     // Send the message
     this.client.sendMessage(channelResolvable, content);
   }
 
   constructMessage(data) {
-    if (data)
-    return 'Message!';
+    switch (data.type) {
+      case 'PushEvent':
+        if (data.payload.size === 1) {
+          return templates.push(data);
+        }
+        return templates.pushMulti(data);
+      case 'CreateEvent':
+        if (data.payload.ref_type === 'branch') {
+          return templates.createBranch(data);
+        } else if (data.payload.ref_type === 'tag') {
+          return templates.createTag(data);
+        }
+        break;
+      case 'DeleteEvent':
+        if (data.payload.ref_type === 'branch') {
+          return templates.deleteBranch(data);
+        } else if (data.payload.ref_type === 'tag') {
+          return templates.deleteTag(data);
+        }
+        break;
+      case 'PullRequestEvent':
+        if (data.payload.action === 'opened') {
+          return templates.pullRequestOpened(data);
+        }
+        break;
+      default:
+        return 'Message!';
+    }
   }
 
   getChannelResolvable(id, name) {
     for (let server of this.client.servers) {
-      out.info(`id: ${server.id}, ${id}`);
       if (server.id === id) {
         for (let channel of server.channels) {
-          out.info(`channel: ${channel.type}, ${channel.name}, ${channel.id}`);
           if (channel.type === 'text' && channel.name === name) {
             return channel.id;
           }
