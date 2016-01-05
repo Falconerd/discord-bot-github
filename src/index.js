@@ -1,8 +1,8 @@
 import fs from 'fs';
-//import path from 'path';
 import Discord from 'discord.js';
 import axios from 'axios';
 import out from './util/out';
+import contains from './util/contains';
 import templates from './templates';
 
 class DiscordBotGithub {
@@ -26,6 +26,7 @@ class DiscordBotGithub {
     this.password = config.password;
     this.subscriptions = config.subscriptions;
     this.client = new Discord.Client();
+    this.client.on('ready', this.ready.bind(this));
     this.token = null;
     this.interval = config.interval;
     this.etags = {};
@@ -33,15 +34,36 @@ class DiscordBotGithub {
   }
 
   start() {
-    const client = this.client;
-    out.info(client.servers);
     this.client.login(this.email, this.password, (error) => {
       if (error) return out.error('[Login]' + error);
-
-      out.info('Discord GitHub Bot listening for changes...');
-
-      setInterval(this.loop.bind(this), this.interval);
     });
+  }
+
+  ready() {
+    out.info('Discord GitHub Bot listening for changes...');
+    this.connectToServers();
+    setInterval(this.loop.bind(this), this.interval);
+  }
+
+  connectToServers() {
+    const connectedServers = [];
+
+    for (let server of this.client.servers) {
+      connectedServers.push(server.id);
+    }
+
+    for (let subscription of this.subscriptions) {
+      for (let server of subscription.servers) {
+        if (!contains(connectedServers, server.id)) {
+          if (server.invite) {
+            this.client.joinServer(server.invite, (error) => {
+              if (error)
+                out.error(`Could not connect to server with id: ${server.id}`);
+            });
+          }
+        }
+      }
+    }
   }
 
   loop() {

@@ -181,6 +181,43 @@
     pullRequestOpened: pullRequestOpened
   };
 
+  /**
+   * Simple helper function to check if a thing is in an array.
+   * @param  {Array} array The array to check.
+   * @param  {any} thing The thing to check for.
+   * @return {Boolean}       True if the thing is in the array, false otherwise.
+   */
+  function contains (array, thing) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = array[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var el = _step.value;
+
+        if (el === thing) {
+          return true;
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return false;
+  }
+
   var DiscordBotGithub = (function () {
     function DiscordBotGithub(config) {
       babelHelpers.classCallCheck(this, DiscordBotGithub);
@@ -206,6 +243,7 @@
         this.password = config.password;
         this.subscriptions = config.subscriptions;
         this.client = new Discord.Client();
+        this.client.on('ready', this.ready.bind(this));
         this.token = null;
         this.interval = config.interval;
         this.etags = {};
@@ -214,17 +252,105 @@
     }, {
       key: 'start',
       value: function start() {
-        var _this = this;
-
-        var client = this.client;
-        out.info(client.servers);
         this.client.login(this.email, this.password, function (error) {
           if (error) return out.error('[Login]' + error);
-
-          out.info('Discord GitHub Bot listening for changes...');
-
-          setInterval(_this.loop.bind(_this), _this.interval);
         });
+      }
+    }, {
+      key: 'ready',
+      value: function ready() {
+        out.info('Discord GitHub Bot listening for changes...');
+        this.connectToServers();
+        setInterval(this.loop.bind(this), this.interval);
+      }
+    }, {
+      key: 'connectToServers',
+      value: function connectToServers() {
+        var _this = this;
+
+        var connectedServers = [];
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = this.client.servers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var server = _step.value;
+
+            connectedServers.push(server.id);
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = this.subscriptions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var subscription = _step2.value;
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            try {
+              var _loop = function _loop() {
+                var server = _step3.value;
+
+                if (!contains(connectedServers, server.id)) {
+                  if (server.invite) {
+                    _this.client.joinServer(server.invite, function () {
+                      out.error('Could not connect to server with id: ' + server.id);
+                    });
+                  }
+                }
+              };
+
+              for (var _iterator3 = subscription.servers[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                _loop();
+              }
+            } catch (err) {
+              _didIteratorError3 = true;
+              _iteratorError3 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                  _iterator3.return();
+                }
+              } finally {
+                if (_didIteratorError3) {
+                  throw _iteratorError3;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
       }
     }, {
       key: 'loop',
@@ -236,13 +362,13 @@
           this.sendQueuedMessages();
         }
         // Check to see if we have any changes in the repositories.
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
 
         try {
-          var _loop = function _loop() {
-            var subscription = _step.value;
+          var _loop2 = function _loop2() {
+            var subscription = _step4.value;
 
             var repo = subscription.repository;
             // If there has been a change, loop through the servers.
@@ -258,20 +384,20 @@
             }).catch(_this2.eventPollFailure);
           };
 
-          for (var _iterator = this.subscriptions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            _loop();
+          for (var _iterator4 = this.subscriptions[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            _loop2();
           }
         } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
+          _didIteratorError4 = true;
+          _iteratorError4 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
+            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+              _iterator4.return();
             }
           } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
+            if (_didIteratorError4) {
+              throw _iteratorError4;
             }
           }
         }
@@ -305,79 +431,79 @@
           // Loop through the servers and send messages to the correct channels
           // given that the event is being traked by said channel.
           // @note: triple for-loop?
-          var _iteratorNormalCompletion2 = true;
-          var _didIteratorError2 = false;
-          var _iteratorError2 = undefined;
+          var _iteratorNormalCompletion5 = true;
+          var _didIteratorError5 = false;
+          var _iteratorError5 = undefined;
 
           try {
-            for (var _iterator2 = subscription.servers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              var server = _step2.value;
-              var _iteratorNormalCompletion3 = true;
-              var _didIteratorError3 = false;
-              var _iteratorError3 = undefined;
+            for (var _iterator5 = subscription.servers[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+              var _server = _step5.value;
+              var _iteratorNormalCompletion6 = true;
+              var _didIteratorError6 = false;
+              var _iteratorError6 = undefined;
 
               try {
-                for (var _iterator3 = server.channels[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                  var channel = _step3.value;
-                  var _iteratorNormalCompletion4 = true;
-                  var _didIteratorError4 = false;
-                  var _iteratorError4 = undefined;
+                for (var _iterator6 = _server.channels[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                  var channel = _step6.value;
+                  var _iteratorNormalCompletion7 = true;
+                  var _didIteratorError7 = false;
+                  var _iteratorError7 = undefined;
 
                   try {
-                    for (var _iterator4 = channel.events[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                      var eventType = _step4.value;
+                    for (var _iterator7 = channel.events[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                      var eventType = _step7.value;
 
                       if (eventType === data.type.replace('Event', '')) {
                         // Event type is being tracked by this channel...
                         // Queue this message for sending
                         this.queue.push({
-                          id: server.id,
+                          id: _server.id,
                           name: channel.name,
                           content: this.constructMessage(data)
                         });
                       }
                     }
                   } catch (err) {
-                    _didIteratorError4 = true;
-                    _iteratorError4 = err;
+                    _didIteratorError7 = true;
+                    _iteratorError7 = err;
                   } finally {
                     try {
-                      if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                        _iterator4.return();
+                      if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                        _iterator7.return();
                       }
                     } finally {
-                      if (_didIteratorError4) {
-                        throw _iteratorError4;
+                      if (_didIteratorError7) {
+                        throw _iteratorError7;
                       }
                     }
                   }
                 }
               } catch (err) {
-                _didIteratorError3 = true;
-                _iteratorError3 = err;
+                _didIteratorError6 = true;
+                _iteratorError6 = err;
               } finally {
                 try {
-                  if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                    _iterator3.return();
+                  if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                    _iterator6.return();
                   }
                 } finally {
-                  if (_didIteratorError3) {
-                    throw _iteratorError3;
+                  if (_didIteratorError6) {
+                    throw _iteratorError6;
                   }
                 }
               }
             }
           } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
+            _didIteratorError5 = true;
+            _iteratorError5 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                _iterator2.return();
+              if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                _iterator5.return();
               }
             } finally {
-              if (_didIteratorError2) {
-                throw _iteratorError2;
+              if (_didIteratorError5) {
+                throw _iteratorError5;
               }
             }
           }
@@ -454,54 +580,54 @@
     }, {
       key: 'getChannelResolvable',
       value: function getChannelResolvable(id, name) {
-        var _iteratorNormalCompletion5 = true;
-        var _didIteratorError5 = false;
-        var _iteratorError5 = undefined;
+        var _iteratorNormalCompletion8 = true;
+        var _didIteratorError8 = false;
+        var _iteratorError8 = undefined;
 
         try {
-          for (var _iterator5 = this.client.servers[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-            var server = _step5.value;
+          for (var _iterator8 = this.client.servers[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+            var _server2 = _step8.value;
 
-            if (server.id === id) {
-              var _iteratorNormalCompletion6 = true;
-              var _didIteratorError6 = false;
-              var _iteratorError6 = undefined;
+            if (_server2.id === id) {
+              var _iteratorNormalCompletion9 = true;
+              var _didIteratorError9 = false;
+              var _iteratorError9 = undefined;
 
               try {
-                for (var _iterator6 = server.channels[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                  var channel = _step6.value;
+                for (var _iterator9 = _server2.channels[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+                  var channel = _step9.value;
 
                   if (channel.type === 'text' && channel.name === name) {
                     return channel.id;
                   }
                 }
               } catch (err) {
-                _didIteratorError6 = true;
-                _iteratorError6 = err;
+                _didIteratorError9 = true;
+                _iteratorError9 = err;
               } finally {
                 try {
-                  if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                    _iterator6.return();
+                  if (!_iteratorNormalCompletion9 && _iterator9.return) {
+                    _iterator9.return();
                   }
                 } finally {
-                  if (_didIteratorError6) {
-                    throw _iteratorError6;
+                  if (_didIteratorError9) {
+                    throw _iteratorError9;
                   }
                 }
               }
             }
           }
         } catch (err) {
-          _didIteratorError5 = true;
-          _iteratorError5 = err;
+          _didIteratorError8 = true;
+          _iteratorError8 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion5 && _iterator5.return) {
-              _iterator5.return();
+            if (!_iteratorNormalCompletion8 && _iterator8.return) {
+              _iterator8.return();
             }
           } finally {
-            if (_didIteratorError5) {
-              throw _iteratorError5;
+            if (_didIteratorError8) {
+              throw _iteratorError8;
             }
           }
         }
