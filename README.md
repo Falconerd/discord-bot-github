@@ -1,4 +1,4 @@
-# Discord GitHub Bot
+# Discord GitHub Bot 0.2.2
 
 [![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=dev)](https://travis-ci.org/Falconerd/discord-bot-github) [![Coverage Status](https://coveralls.io/repos/Falconerd/discord-bot-github/badge.svg?branch=dev&service=github)](https://coveralls.io/github/Falconerd/discord-bot-github?branch=dev)
 =======
@@ -44,6 +44,7 @@ config.js[on] options listed below
   - [x] Branch
   - [x] Tag
 - [ ] __DeleteEvent__ - Represents a deleted branch or tag.
+  - [ ] Repository
   - [x] Branch
   - [x] Tag
 - [ ] __DeploymentEvent__ - Represents a deployment.
