@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+//import path from 'path';
 import Discord from 'discord.js';
 import axios from 'axios';
 import out from './util/out';
@@ -10,18 +10,17 @@ class DiscordBotGithub {
     const setup = this.setup.bind(this);
     const start = this.start.bind(this);
     if (process && process.argv.length >= 3) {
-      fs.readFile(path.join(__dirname, process.argv[2]), function(err, config) {
+      fs.readFile(process.argv[2], function(err, config) {
         if (err) return out.error(err);
         setup(JSON.parse(config));
         start();
       });
     } else {
-      this.setup(JSON.parse(config));
+      this.setup(config);
     }
   }
 
   setup(config) {
-    out.info('setting up' + JSON.stringify(this, null, 2));
     this.config = config;
     this.email = config.email;
     this.password = config.password;
@@ -119,6 +118,10 @@ class DiscordBotGithub {
       return;
     }
 
+    if (error.status === 401) {
+      out.error('Problem with GitHub authentication. Check your API token.');
+      return;
+    }
     out.error(error);
   }
 
@@ -193,4 +196,5 @@ class DiscordBotGithub {
   }
 }
 
+export const bot = DiscordBotGithub;
 export default new DiscordBotGithub;

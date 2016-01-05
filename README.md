@@ -26,19 +26,9 @@
 
 `npm install --save discord-bot-github`
 
-> index.js
-
-```javascript
-var DiscoBot = require('discord-bot-github');
-var config = require('./config');
-
-var bot = new DiscoBot(config);
-bot.start();
-```
+`node ./node_modules/discord-bot-github config.json`
 
 > config.js[on] (options listed below)
-
-`node .`
 
 ## Features
 - [x] Sweet avatar

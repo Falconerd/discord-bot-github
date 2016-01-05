@@ -1,11 +1,10 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('fs'), require('path'), require('discord.js'), require('axios'), require('chalk')) :
-  typeof define === 'function' && define.amd ? define(['fs', 'path', 'discord.js', 'axios', 'chalk'], factory) :
-  global.discordBotGithub = factory(global.fs,global.path,global.Discord,global.axios,global.chalk);
-}(this, function (fs,path,Discord,axios,chalk) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('fs'), require('discord.js'), require('axios'), require('chalk')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'fs', 'discord.js', 'axios', 'chalk'], factory) :
+  factory((global.discordBotGithub = {}),global.fs,global.Discord,global.axios,global.chalk);
+}(this, function (exports,fs,Discord,axios,chalk) { 'use strict';
 
   fs = 'default' in fs ? fs['default'] : fs;
-  path = 'default' in path ? path['default'] : path;
   Discord = 'default' in Discord ? Discord['default'] : Discord;
   axios = 'default' in axios ? axios['default'] : axios;
   chalk = 'default' in chalk ? chalk['default'] : chalk;
@@ -189,20 +188,19 @@
       var setup = this.setup.bind(this);
       var start = this.start.bind(this);
       if (process && process.argv.length >= 3) {
-        fs.readFile(path.join(__dirname, process.argv[2]), function (err, config) {
+        fs.readFile(process.argv[2], function (err, config) {
           if (err) return out.error(err);
           setup(JSON.parse(config));
           start();
         });
       } else {
-        this.setup(JSON.parse(config));
+        this.setup(config);
       }
     }
 
     babelHelpers.createClass(DiscordBotGithub, [{
       key: 'setup',
       value: function setup(config) {
-        out.info('setting up' + JSON.stringify(this, null, 2));
         this.config = config;
         this.email = config.email;
         this.password = config.password;
@@ -394,6 +392,10 @@
           return;
         }
 
+        if (error.status === 401) {
+          out.error('Problem with GitHub authentication. Check your API token.');
+          return;
+        }
         out.error(error);
       }
     }, {
@@ -452,7 +454,6 @@
     }, {
       key: 'getChannelResolvable',
       value: function getChannelResolvable(id, name) {
-        out.info(this.client.servers, null, 2);
         var _iteratorNormalCompletion5 = true;
         var _didIteratorError5 = false;
         var _iteratorError5 = undefined;
@@ -519,8 +520,10 @@
     return DiscordBotGithub;
   })();
 
+  var bot = DiscordBotGithub;
   var index = new DiscordBotGithub();
 
-  return index;
+  exports.bot = bot;
+  exports['default'] = index;
 
 }));

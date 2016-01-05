@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import Discord from 'discord.js';
 import axios from 'axios';
 import chalk from 'chalk';
@@ -183,20 +182,19 @@ var DiscordBotGithub = (function () {
     var setup = this.setup.bind(this);
     var start = this.start.bind(this);
     if (process && process.argv.length >= 3) {
-      fs.readFile(path.join(__dirname, process.argv[2]), function (err, config) {
+      fs.readFile(process.argv[2], function (err, config) {
         if (err) return out.error(err);
         setup(JSON.parse(config));
         start();
       });
     } else {
-      this.setup(JSON.parse(config));
+      this.setup(config);
     }
   }
 
   babelHelpers.createClass(DiscordBotGithub, [{
     key: 'setup',
     value: function setup(config) {
-      out.info('setting up' + JSON.stringify(this, null, 2));
       this.config = config;
       this.email = config.email;
       this.password = config.password;
@@ -388,6 +386,10 @@ var DiscordBotGithub = (function () {
         return;
       }
 
+      if (error.status === 401) {
+        out.error('Problem with GitHub authentication. Check your API token.');
+        return;
+      }
       out.error(error);
     }
   }, {
@@ -446,7 +448,6 @@ var DiscordBotGithub = (function () {
   }, {
     key: 'getChannelResolvable',
     value: function getChannelResolvable(id, name) {
-      out.info(this.client.servers, null, 2);
       var _iteratorNormalCompletion5 = true;
       var _didIteratorError5 = false;
       var _iteratorError5 = undefined;
@@ -513,6 +514,7 @@ var DiscordBotGithub = (function () {
   return DiscordBotGithub;
 })();
 
+var bot = DiscordBotGithub;
 var index = new DiscordBotGithub();
 
-export default index;
+export { bot };export default index;
