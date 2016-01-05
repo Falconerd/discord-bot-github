@@ -4,7 +4,7 @@ function push(data) {
   const commit = data.payload.commits[0];
   const name = commit.author.name;
   const message = commit.message;
-  const sha = commit.sha;
+  const sha = commit.sha.substring(0, 7);
   const url = `https://github.com/${repo}/commit/${sha}`;
   let content = `[${repo}:${branch}] 1 new commit by ${name}:`;
   content += `\n${message} - ${name}`;
@@ -20,8 +20,10 @@ function pushMulti(data) {
 
   let content = `[${repo}:${branch}] ${size} new commits:`;
   for (let commit of commits) {
+    const sha = commit.sha.substring(0, 7);
+    const url = `https://github.com/${repo}/commit/${sha}`;
     content += `\n${commit.message} - ${commit.author.name}`;
-    content += `\n${commit.url}`;
+    content += `\n${url}`;
   }
 
   return content;
@@ -74,7 +76,7 @@ function pullRequestOpened(data) {
   let content = `[**${repo}**] New pull request from ${user}`;
   content += `\n[${repo}:${baseBranch} ← ${head}:${headBranch}]`;
   content += `\n${commits} commits • ${changedFiles} changed files • ${additions} additions • ${deletions} deletions`;
-  content += `\nhttp://github.com/Falconerd/multiply/pulls/${number}`;
+  content += `\nhttp://github.com/${repo}/pull/${number}`;
 
   return content;
 }

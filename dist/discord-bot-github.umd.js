@@ -1,9 +1,11 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('discord.js'), require('axios'), require('chalk')) :
-  typeof define === 'function' && define.amd ? define(['discord.js', 'axios', 'chalk'], factory) :
-  global.discordBotGithub = factory(global.Discord,global.axios,global.chalk);
-}(this, function (Discord,axios,chalk) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('fs'), require('path'), require('discord.js'), require('axios'), require('chalk')) :
+  typeof define === 'function' && define.amd ? define(['fs', 'path', 'discord.js', 'axios', 'chalk'], factory) :
+  global.discordBotGithub = factory(global.fs,global.path,global.Discord,global.axios,global.chalk);
+}(this, function (fs,path,Discord,axios,chalk) { 'use strict';
 
+  fs = 'default' in fs ? fs['default'] : fs;
+  path = 'default' in path ? path['default'] : path;
   Discord = 'default' in Discord ? Discord['default'] : Discord;
   axios = 'default' in axios ? axios['default'] : axios;
   chalk = 'default' in chalk ? chalk['default'] : chalk;
@@ -72,41 +74,154 @@
     var commit = data.payload.commits[0];
     var name = commit.author.name;
     var message = commit.message;
-    var sha = commit.sha;
-    var url = 'https://github.com/' + repo + '/commits/' + sha;
-    var content = '[' + repo + ':' + branch + '] 1 new comit by ' + name + ':';
+    var sha = commit.sha.substring(0, 7);
+    var url = 'https://github.com/' + repo + '/commit/' + sha;
+    var content = '[' + repo + ':' + branch + '] 1 new commit by ' + name + ':';
     content += '\n' + message + ' - ' + name;
     content += '\n' + url;
     return content;
   }
 
+  function pushMulti(data) {
+    var repo = data.repo.name;
+    var branch = data.payload.ref.split('/')[2];
+    var size = data.payload.size;
+    var commits = data.payload.commits;
+
+    var content = '[' + repo + ':' + branch + '] ' + size + ' new commits:';
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = commits[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var commit = _step.value;
+
+        var sha = commit.sha.substring(0, 7);
+        var url = 'https://github.com/' + repo + '/commit/' + sha;
+        content += '\n' + commit.message + ' - ' + commit.author.name;
+        content += '\n' + url;
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return content;
+  }
+
+  function createBranch(data) {
+    var repo = data.repo.name;
+    var branch = data.payload.ref;
+    var user = data.actor.login;
+
+    var content = '[' + repo + '] The branch **' + branch + '** was created by ' + user;
+    content += '\nhttps://github.com/' + repo + '/tree/' + branch;
+
+    return content;
+  }
+
+  function createTag(data) {
+    var repo = data.repo.name;
+    var tag = data.payload.ref;
+    var user = data.actor.login;
+    return '[' + repo + '] The tag **' + tag + '** was created by ' + user;
+  }
+
+  function deleteBranch(data) {
+    var repo = data.repo.name;
+    var branch = data.payload.ref;
+    var user = data.actor.login;
+    return '[' + repo + '] The branch **' + branch + '** was deleted by ' + user;
+  }
+
+  function deleteTag(data) {
+    var repo = data.repo.name;
+    var tag = data.payload.ref;
+    var user = data.actor.login;
+    return '[' + repo + '] The tag **' + tag + '** was deleted by ' + user;
+  }
+
+  function pullRequestOpened(data) {
+    var repo = data.repo.name;
+    var user = data.payload.pull_request.user.login;
+    var head = data.payload.pull_request.head.repo.full_name;
+    var headBranch = data.payload.pull_request.head.ref;
+    var baseBranch = data.payload.pull_request.base.ref;
+    var commits = data.payload.pull_request.commits;
+    var additions = data.payload.pull_request.additions;
+    var deletions = data.payload.pull_request.deletions;
+    var changedFiles = data.payload.pull_request.changed_files;
+    var number = data.payload.number;
+
+    var content = '[**' + repo + '**] New pull request from ' + user;
+    content += '\n[' + repo + ':' + baseBranch + ' ← ' + head + ':' + headBranch + ']';
+    content += '\n' + commits + ' commits • ' + changedFiles + ' changed files • ' + additions + ' additions • ' + deletions + ' deletions';
+    content += '\nhttp://github.com/' + repo + '/pull/' + number;
+
+    return content;
+  }
+
   var templates = {
-    push: push
+    push: push,
+    pushMulti: pushMulti,
+    createBranch: createBranch,
+    createTag: createTag,
+    deleteBranch: deleteBranch,
+    deleteTag: deleteTag,
+    pullRequestOpened: pullRequestOpened
   };
 
   var DiscordBotGithub = (function () {
     function DiscordBotGithub(config) {
       babelHelpers.classCallCheck(this, DiscordBotGithub);
 
-      this.config = config;
-      this.email = config.email;
-      this.password = config.password;
-      this.subscriptions = config.subscriptions;
-      this.client = new Discord.Client();
-      this.token = null;
-      this.interval = config.interval;
-      this.etags = {};
+      var setup = this.setup.bind(this);
+      var start = this.start.bind(this);
+      if (process && process.argv.length >= 3) {
+        fs.readFile(path.join(__dirname, process.argv[2]), function (err, config) {
+          if (err) return out.error(err);
+          setup(JSON.parse(config));
+          start();
+        });
+      } else {
+        this.setup(JSON.parse(config));
+      }
     }
 
     babelHelpers.createClass(DiscordBotGithub, [{
+      key: 'setup',
+      value: function setup(config) {
+        out.info('setting up' + JSON.stringify(this, null, 2));
+        this.config = config;
+        this.email = config.email;
+        this.password = config.password;
+        this.subscriptions = config.subscriptions;
+        this.client = new Discord.Client();
+        this.token = null;
+        this.interval = config.interval;
+        this.etags = {};
+        this.queue = [];
+      }
+    }, {
       key: 'start',
       value: function start() {
         var _this = this;
 
-        this.client.login(this.email, this.password, function (error, token) {
+        var client = this.client;
+        out.info(client.servers);
+        this.client.login(this.email, this.password, function (error) {
           if (error) return out.error('[Login]' + error);
-
-          _this.token = token;
 
           out.info('Discord GitHub Bot listening for changes...');
 
@@ -118,6 +233,10 @@
       value: function loop() {
         var _this2 = this;
 
+        // Check to see if we have any messages in the queue.
+        if (this.queue.length) {
+          this.sendQueuedMessages();
+        }
         // Check to see if we have any changes in the repositories.
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
@@ -212,7 +331,12 @@
 
                       if (eventType === data.type.replace('Event', '')) {
                         // Event type is being tracked by this channel...
-                        this.sendMessage(server.id, channel.name, data);
+                        // Queue this message for sending
+                        this.queue.push({
+                          id: server.id,
+                          name: channel.name,
+                          content: this.constructMessage(data)
+                        });
                       }
                     }
                   } catch (err) {
@@ -270,17 +394,28 @@
           return;
         }
 
-        out.error(JSON.stringify(error, null, 2));
+        out.error(error);
+      }
+    }, {
+      key: 'sendQueuedMessages',
+      value: function sendQueuedMessages() {
+        while (this.queue.length) {
+          var message = this.queue.shift();
+          this.sendMessage(message.id, message.name, message.content);
+        }
       }
     }, {
       key: 'sendMessage',
-      value: function sendMessage(id, name, data) {
-        // Construct the message from a template.
-        var content = this.constructMessage(data);
+      value: function sendMessage(id, name, content) {
         // Get the channel ID
         var channelResolvable = this.getChannelResolvable(id, name);
         // Send the message
-        this.client.sendMessage(channelResolvable, content);
+        this.client.sendMessage(channelResolvable, content, {}, function (error) {
+          if (error) {
+            out.error('Error sending message');
+            out.error(error);
+          }
+        });
       }
     }, {
       key: 'constructMessage',
@@ -290,6 +425,25 @@
             if (data.payload.size === 1) {
               return templates.push(data);
             }
+            return templates.pushMulti(data);
+          case 'CreateEvent':
+            if (data.payload.ref_type === 'branch') {
+              return templates.createBranch(data);
+            } else if (data.payload.ref_type === 'tag') {
+              return templates.createTag(data);
+            }
+            break;
+          case 'DeleteEvent':
+            if (data.payload.ref_type === 'branch') {
+              return templates.deleteBranch(data);
+            } else if (data.payload.ref_type === 'tag') {
+              return templates.deleteTag(data);
+            }
+            break;
+          case 'PullRequestEvent':
+            if (data.payload.action === 'opened') {
+              return templates.pullRequestOpened(data);
+            }
             break;
           default:
             return 'Message!';
@@ -298,6 +452,7 @@
     }, {
       key: 'getChannelResolvable',
       value: function getChannelResolvable(id, name) {
+        out.info(this.client.servers, null, 2);
         var _iteratorNormalCompletion5 = true;
         var _didIteratorError5 = false;
         var _iteratorError5 = undefined;
@@ -364,6 +519,8 @@
     return DiscordBotGithub;
   })();
 
-  return DiscordBotGithub;
+  var index = new DiscordBotGithub();
+
+  return index;
 
 }));

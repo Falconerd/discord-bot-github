@@ -21,3 +21,4 @@ build/Release
 node_modules
 
 src/config.real.js
+config.json

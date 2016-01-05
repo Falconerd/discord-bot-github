@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import Discord from 'discord.js';
 import axios from 'axios';
 import out from './util/out';
@@ -5,6 +7,21 @@ import templates from './templates';
 
 class DiscordBotGithub {
   constructor(config) {
+    const setup = this.setup.bind(this);
+    const start = this.start.bind(this);
+    if (process && process.argv.length >= 3) {
+      fs.readFile(path.join(__dirname, process.argv[2]), function(err, config) {
+        if (err) return out.error(err);
+        setup(JSON.parse(config));
+        start();
+      });
+    } else {
+      this.setup(JSON.parse(config));
+    }
+  }
+
+  setup(config) {
+    out.info('setting up' + JSON.stringify(this, null, 2));
     this.config = config;
     this.email = config.email;
     this.password = config.password;
@@ -13,13 +30,14 @@ class DiscordBotGithub {
     this.token = null;
     this.interval = config.interval;
     this.etags = {};
+    this.queue = [];
   }
 
   start() {
-    this.client.login(this.email, this.password, (error, token) => {
+    const client = this.client;
+    out.info(client.servers);
+    this.client.login(this.email, this.password, (error) => {
       if (error) return out.error('[Login]' + error);
-
-      this.token = token;
 
       out.info('Discord GitHub Bot listening for changes...');
 
@@ -28,6 +46,10 @@ class DiscordBotGithub {
   }
 
   loop() {
+    // Check to see if we have any messages in the queue.
+    if (this.queue.length) {
+      this.sendQueuedMessages();
+    }
     // Check to see if we have any changes in the repositories.
     for (let subscription of this.subscriptions) {
       const repo = subscription.repository;
@@ -77,7 +99,12 @@ class DiscordBotGithub {
           for (let eventType of channel.events) {
             if (eventType === data.type.replace('Event', '')) {
               // Event type is being tracked by this channel...
-              this.sendMessage(server.id, channel.name, data);
+              // Queue this message for sending
+              this.queue.push({
+                id: server.id,
+                name: channel.name,
+                content: this.constructMessage(data)
+              });
             }
           }
         }
@@ -92,16 +119,26 @@ class DiscordBotGithub {
       return;
     }
 
-    out.error(JSON.stringify(error, null, 2));
+    out.error(error);
   }
 
-  sendMessage(id, name, data) {
-    // Construct the message from a template.
-    const content = this.constructMessage(data);
+  sendQueuedMessages() {
+    while (this.queue.length) {
+      let message = this.queue.shift();
+      this.sendMessage(message.id, message.name, message.content);
+    }
+  }
+
+  sendMessage(id, name, content) {
     // Get the channel ID
     const channelResolvable = this.getChannelResolvable(id, name);
     // Send the message
-    this.client.sendMessage(channelResolvable, content);
+    this.client.sendMessage(channelResolvable, content, {}, (error) => {
+      if (error) {
+        out.error('Error sending message');
+        out.error(error);
+      }
+    });
   }
 
   constructMessage(data) {
@@ -156,4 +193,4 @@ class DiscordBotGithub {
   }
 }
 
-export default DiscordBotGithub;
+export default new DiscordBotGithub;
