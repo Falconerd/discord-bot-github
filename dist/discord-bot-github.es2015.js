@@ -306,8 +306,8 @@ var DiscordBotGithub = (function () {
 
               if (!contains(connectedServers, server.id)) {
                 if (server.invite) {
-                  _this.client.joinServer(server.invite, function () {
-                    out.error('Could not connect to server with id: ' + server.id);
+                  _this.client.joinServer(server.invite, function (error) {
+                    if (error) out.error('Could not connect to server with id: ' + server.id);
                   });
                 }
               }
