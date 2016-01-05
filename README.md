@@ -79,6 +79,7 @@ config.js[on] options listed below
 > Example
 
 ```json
+{
   "interval": 5000,
   "email": "discordgithub@gmail.com",
   "password": "xxxxxxxxxxxxxx",
