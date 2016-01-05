@@ -1,11 +1,10 @@
 # Discord GitHub Bot
 
-> Major breaking changes from 0.1.0 to 0.2.0
-
-> This is the main development branch. All changes will be tested on
-> this branch before they are pushed to master.
-
 [![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=dev)](https://travis-ci.org/Falconerd/discord-bot-github) [![Coverage Status](https://coveralls.io/repos/Falconerd/discord-bot-github/badge.svg?branch=dev&service=github)](https://coveralls.io/github/Falconerd/discord-bot-github?branch=dev)
+=======
+
+## Preview
+![GitHub bot in Discord](http://i.imgur.com/hjwC1UG.png)
 
 ## Requirements
 
