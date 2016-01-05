@@ -27,7 +27,7 @@
 
 `node ./node_modules/discord-bot-github config.json`
 
-> config.js[on] (options listed below)
+config.js[on] options listed below
 
 ## Features
 - [x] Sweet avatar
