@@ -1,7 +1,7 @@
 import fs from 'fs';
+import chalk from 'chalk';
 import Discord from 'discord.js';
 import axios from 'axios';
-import chalk from 'chalk';
 
 var babelHelpers = {};
 
@@ -216,34 +216,19 @@ var DiscordBotGithub = (function () {
   function DiscordBotGithub(config) {
     babelHelpers.classCallCheck(this, DiscordBotGithub);
 
-    var setup = this.setup.bind(this);
-    var start = this.start.bind(this);
-    if (process && process.argv.length >= 3) {
-      fs.readFile(process.argv[2], function (err, config) {
-        if (err) return out.error(err);
-        setup(JSON.parse(config));
-        start();
-      });
-    } else {
-      this.setup(config);
-    }
+    this.config = config;
+    this.email = config.email;
+    this.password = config.password;
+    this.subscriptions = config.subscriptions;
+    this.client = new Discord.Client();
+    this.client.on('ready', this.ready.bind(this));
+    this.token = null;
+    this.interval = config.interval;
+    this.etags = {};
+    this.queue = [];
   }
 
   babelHelpers.createClass(DiscordBotGithub, [{
-    key: 'setup',
-    value: function setup(config) {
-      this.config = config;
-      this.email = config.email;
-      this.password = config.password;
-      this.subscriptions = config.subscriptions;
-      this.client = new Discord.Client();
-      this.client.on('ready', this.ready.bind(this));
-      this.token = null;
-      this.interval = config.interval;
-      this.etags = {};
-      this.queue = [];
-    }
-  }, {
     key: 'start',
     value: function start() {
       this.client.login(this.email, this.password, function (error) {
@@ -640,7 +625,10 @@ var DiscordBotGithub = (function () {
   return DiscordBotGithub;
 })();
 
-var bot = DiscordBotGithub;
-var index = new DiscordBotGithub();
-
-export { bot };export default index;
+if (process && process.argv.length >= 3) {
+  fs.readFile(process.argv[2], function (err, config) {
+    if (err) return out.error(err);
+    var bot = new DiscordBotGithub(JSON.parse(config));
+    bot.start();
+  });
+}

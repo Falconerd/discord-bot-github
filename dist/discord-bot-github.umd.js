@@ -1,13 +1,13 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('fs'), require('discord.js'), require('axios'), require('chalk')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'fs', 'discord.js', 'axios', 'chalk'], factory) :
-  factory((global.discordBotGithub = {}),global.fs,global.Discord,global.axios,global.chalk);
-}(this, function (exports,fs,Discord,axios,chalk) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('fs'), require('chalk'), require('discord.js'), require('axios')) :
+  typeof define === 'function' && define.amd ? define(['fs', 'chalk', 'discord.js', 'axios'], factory) :
+  factory(global.fs,global.chalk,global.Discord,global.axios);
+}(this, function (fs,chalk,Discord,axios) { 'use strict';
 
   fs = 'default' in fs ? fs['default'] : fs;
+  chalk = 'default' in chalk ? chalk['default'] : chalk;
   Discord = 'default' in Discord ? Discord['default'] : Discord;
   axios = 'default' in axios ? axios['default'] : axios;
-  chalk = 'default' in chalk ? chalk['default'] : chalk;
 
   var babelHelpers = {};
 
@@ -222,34 +222,19 @@
     function DiscordBotGithub(config) {
       babelHelpers.classCallCheck(this, DiscordBotGithub);
 
-      var setup = this.setup.bind(this);
-      var start = this.start.bind(this);
-      if (process && process.argv.length >= 3) {
-        fs.readFile(process.argv[2], function (err, config) {
-          if (err) return out.error(err);
-          setup(JSON.parse(config));
-          start();
-        });
-      } else {
-        this.setup(config);
-      }
+      this.config = config;
+      this.email = config.email;
+      this.password = config.password;
+      this.subscriptions = config.subscriptions;
+      this.client = new Discord.Client();
+      this.client.on('ready', this.ready.bind(this));
+      this.token = null;
+      this.interval = config.interval;
+      this.etags = {};
+      this.queue = [];
     }
 
     babelHelpers.createClass(DiscordBotGithub, [{
-      key: 'setup',
-      value: function setup(config) {
-        this.config = config;
-        this.email = config.email;
-        this.password = config.password;
-        this.subscriptions = config.subscriptions;
-        this.client = new Discord.Client();
-        this.client.on('ready', this.ready.bind(this));
-        this.token = null;
-        this.interval = config.interval;
-        this.etags = {};
-        this.queue = [];
-      }
-    }, {
       key: 'start',
       value: function start() {
         this.client.login(this.email, this.password, function (error) {
@@ -646,10 +631,12 @@
     return DiscordBotGithub;
   })();
 
-  var bot = DiscordBotGithub;
-  var index = new DiscordBotGithub();
-
-  exports.bot = bot;
-  exports['default'] = index;
+  if (process && process.argv.length >= 3) {
+    fs.readFile(process.argv[2], function (err, config) {
+      if (err) return out.error(err);
+      var bot = new DiscordBotGithub(JSON.parse(config));
+      bot.start();
+    });
+  }
 
 }));
