@@ -1,0 +1,27 @@
+{
+  "interval": 5000,
+  "email": "falcoderp@gmail.com",
+  "password": "travis-ci",
+  "token": "c6c859bd79aa5ad9d88d62247a534e1e76273dcd",
+  "avatar": "somebase64image",
+  "subscriptions": [
+    {
+      "repository": "Falconerd/multiply",
+      "servers": [
+        {
+          "id": "125472919223664640",
+          "invite": "http://discord.gg/1234567890",
+          "channels": [
+            {
+              "name": "github",
+              "events": [
+                "Push",
+                "PullRequest"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
