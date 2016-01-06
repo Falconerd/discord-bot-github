@@ -1,6 +1,6 @@
 # Discord GitHub Bot 0.2.4
 
-[![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=dev)](https://travis-ci.org/Falconerd/discord-bot-github) [![Coverage Status](https://coveralls.io/repos/Falconerd/discord-bot-github/badge.svg?branch=dev&service=github)](https://coveralls.io/github/Falconerd/discord-bot-github?branch=dev)
+[![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=master)](https://travis-ci.org/Falconerd/discord-bot-github) [![Coverage Status](https://coveralls.io/repos/Falconerd/discord-bot-github/badge.svg?branch=master&service=github)](https://coveralls.io/github/Falconerd/discord-bot-github?branch=master)
 =======
 
 ## Preview
