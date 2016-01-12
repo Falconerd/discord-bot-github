@@ -175,6 +175,15 @@ class DiscordBotGithub {
       case 'PullRequestEvent':
         if (data.payload.action === 'opened') {
           return templates.pullRequestOpened(data);
+        } else if (data.payload.action === 'reopened') {
+          return templates.pullRequestRepoened(data);
+        } else if (data.payload.action === 'closed') {
+          return templates.pullRequestClosed(data);
+        }
+        break;
+      case 'IssueCommentEvent':
+        if (data.payload.action === 'created') {
+          return templates.issueCommentCreated(data);
         }
         break;
       default:

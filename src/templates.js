@@ -76,7 +76,61 @@ function pullRequestOpened(data) {
   let content = `[**${repo}**] New pull request from ${user}`;
   content += `\n[${repo}:${baseBranch} ← ${head}:${headBranch}]`;
   content += `\n${commits} commits • ${changedFiles} changed files • ${additions} additions • ${deletions} deletions`;
-  content += `\nhttp://github.com/${repo}/pull/${number}`;
+  content += `\nhttps://github.com/${repo}/pull/${number}`;
+
+  return content;
+}
+
+function pullRequestClosed(data) {
+  const repo = data.repo.name;
+  const actor = data.actor.login;
+  const user = data.payload.pull_request.user.login;
+  const head = data.payload.pull_request.head.repo.full_name;
+  const headBranch = data.payload.pull_request.head.ref;
+  const baseBranch = data.payload.pull_request.base.ref;
+  const commits = data.payload.pull_request.commits;
+  const additions = data.payload.pull_request.additions;
+  const deletions = data.payload.pull_request.deletions;
+  const changedFiles = data.payload.pull_request.changed_files;
+  const number = data.payload.number;
+
+  let content = `[**${repo}**] Pull request by ${user} closed by ${actor}:`;
+  content += `\n[${repo}:${baseBranch} ← ${head}:${headBranch}]`;
+  content += `\n${commits} commits • ${changedFiles} changed files • ${additions} additions • ${deletions} deletions`;
+  content += `\nhttps://github.com/${repo}/pull/${number}`;
+
+  return content;
+}
+
+function pullRequestRepoened(data) {
+  const repo = data.repo.name;
+  const actor = data.actor.login;
+  const user = data.payload.pull_request.user.login;
+  const head = data.payload.pull_request.head.repo.full_name;
+  const headBranch = data.payload.pull_request.head.ref;
+  const baseBranch = data.payload.pull_request.base.ref;
+  const commits = data.payload.pull_request.commits;
+  const additions = data.payload.pull_request.additions;
+  const deletions = data.payload.pull_request.deletions;
+  const changedFiles = data.payload.pull_request.changed_files;
+  const number = data.payload.number;
+
+  let content = `[**${repo}**] Pull request by ${user} reopened by ${actor}:`;
+  content += `\n[${repo}:${baseBranch} ← ${head}:${headBranch}]`;
+  content += `\n${commits} commits • ${changedFiles} changed files • ${additions} additions • ${deletions} deletions`;
+  content += `\nhttps://github.com/${repo}/pull/${number}`;
+
+  return content;
+}
+
+function issueCommentCreated(data) {
+  const url = data.payload.comment.html_url;
+  const repo = data.repo.name;
+  const actor = data.actor.login;
+  const title = data.payload.issue.title;
+
+  let content = `[**${repo}**] New comment on issue "${title}" by ${actor}:`;
+  content += `\n${url}`;
 
   return content;
 }
@@ -88,5 +142,8 @@ export default {
   createTag,
   deleteBranch,
   deleteTag,
-  pullRequestOpened
+  pullRequestOpened,
+  pullRequestClosed,
+  pullRequestRepoened,
+  issueCommentCreated
 };
