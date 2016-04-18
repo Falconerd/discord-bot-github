@@ -391,28 +391,28 @@
       key: 'eventPollSuccess',
       value: function eventPollSuccess(response, subscription) {
         if (response.status !== 200) {
-          out.error('Wrong response code. Expected 200 and got ' + response.status);
+          out.error('Wrong response code for repo \''+subscription.repository+'\'. Expected 200 and got ' + response.status);
           return;
         }
 
         if (!response.headers) {
-          out.error('No headers found');
+          out.error('No headers found for repo \''+subscription.repository+'\'.');
           return;
         }
 
         if (!response.headers.etag) {
-          out.error('No etag header found');
+          out.error('No etag header found for repo \''+subscription.repository+'\'.');
           return;
         }
 
         if (!response.data.length) {
-          out.error('No data found');
+          out.error('No data found for repo \''+subscription.repository+'\'.');
           return;
         }
 
         if (this.etags[subscription.repository]) {
           var data = response.data[0];
-          out.info('Something has changed!');
+          out.info('Something has changed on repository \''+subscription.repository+'\'!');
           // Loop through the servers and send messages to the correct channels
           // given that the event is being traked by said channel.
           // @note: triple for-loop?
