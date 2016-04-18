@@ -244,7 +244,7 @@
     }, {
       key: 'ready',
       value: function ready() {
-        out.info('Discord GitHub Bot listening for changes...');
+        out.info('Discord GitHub Bot listening for changes in '+this.subscriptions.length+' repositories...');
         this.connectToServers();
         setInterval(this.loop.bind(this), this.interval);
       }
