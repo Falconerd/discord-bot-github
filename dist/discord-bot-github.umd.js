@@ -559,7 +559,7 @@
             }
             break;
           default:
-            return 'Message!';
+              return 'Something has changed on \''+data.repo.name+'\'.' || "";
         }
       }
     }, {
