@@ -75,7 +75,7 @@
     var message = commit.message;
     var sha = commit.sha.substring(0, 7);
     var url = 'https://github.com/' + repo + '/commit/' + sha;
-    var content = '[' + repo + ':' + branch + '] 1 new commit by ' + name + ':';
+    var content = '[**' + repo + ':' + branch + '**] 1 new commit by ' + name + ':';
     content += '\n' + message + ' - ' + name;
     content += '\n' + url;
     return content;
@@ -87,7 +87,7 @@
     var size = data.payload.size;
     var commits = data.payload.commits;
 
-    var content = '[' + repo + ':' + branch + '] ' + size + ' new commits:';
+    var content = '[**' + repo + ':' + branch + '**] ' + size + ' new commits:';
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
@@ -124,7 +124,7 @@
     var branch = data.payload.ref;
     var user = data.actor.login;
 
-    var content = '[' + repo + '] The branch **' + branch + '** was created by ' + user;
+    var content = '[**' + repo + '**] The branch **' + branch + '** was created by ' + user;
     content += '\nhttps://github.com/' + repo + '/tree/' + branch;
 
     return content;
@@ -134,21 +134,21 @@
     var repo = data.repo.name;
     var tag = data.payload.ref;
     var user = data.actor.login;
-    return '[' + repo + '] The tag **' + tag + '** was created by ' + user;
+    return '[**' + repo + '**] The tag **' + tag + '** was created by ' + user;
   }
 
   function deleteBranch(data) {
     var repo = data.repo.name;
     var branch = data.payload.ref;
     var user = data.actor.login;
-    return '[' + repo + '] The branch **' + branch + '** was deleted by ' + user;
+    return '[**' + repo + '**] The branch **' + branch + '** was deleted by ' + user;
   }
 
   function deleteTag(data) {
     var repo = data.repo.name;
     var tag = data.payload.ref;
     var user = data.actor.login;
-    return '[' + repo + '] The tag **' + tag + '** was deleted by ' + user;
+    return '[**' + repo + '**] The tag **' + tag + '** was deleted by ' + user;
   }
 
   function pullRequestOpened(data) {
@@ -166,7 +166,101 @@
     var content = '[**' + repo + '**] New pull request from ' + user;
     content += '\n[' + repo + ':' + baseBranch + ' ← ' + head + ':' + headBranch + ']';
     content += '\n' + commits + ' commits • ' + changedFiles + ' changed files • ' + additions + ' additions • ' + deletions + ' deletions';
-    content += '\nhttp://github.com/' + repo + '/pull/' + number;
+    content += '\nhttps://github.com/' + repo + '/pull/' + number;
+
+    return content;
+  }
+
+  function pullRequestClosed(data) {
+    var repo = data.repo.name;
+    var actor = data.actor.login;
+    var user = data.payload.pull_request.user.login;
+    var head = data.payload.pull_request.head.repo.full_name;
+    var headBranch = data.payload.pull_request.head.ref;
+    var baseBranch = data.payload.pull_request.base.ref;
+    var commits = data.payload.pull_request.commits;
+    var additions = data.payload.pull_request.additions;
+    var deletions = data.payload.pull_request.deletions;
+    var changedFiles = data.payload.pull_request.changed_files;
+    var number = data.payload.number;
+
+    var content = '[**' + repo + '**] Pull request by ' + user + ' closed by ' + actor + ':';
+    content += '\n[' + repo + ':' + baseBranch + ' ← ' + head + ':' + headBranch + ']';
+    content += '\n' + commits + ' commits • ' + changedFiles + ' changed files • ' + additions + ' additions • ' + deletions + ' deletions';
+    content += '\nhttps://github.com/' + repo + '/pull/' + number;
+
+    return content;
+  }
+
+  function pullRequestRepoened(data) {
+    var repo = data.repo.name;
+    var actor = data.actor.login;
+    var user = data.payload.pull_request.user.login;
+    var head = data.payload.pull_request.head.repo.full_name;
+    var headBranch = data.payload.pull_request.head.ref;
+    var baseBranch = data.payload.pull_request.base.ref;
+    var commits = data.payload.pull_request.commits;
+    var additions = data.payload.pull_request.additions;
+    var deletions = data.payload.pull_request.deletions;
+    var changedFiles = data.payload.pull_request.changed_files;
+    var number = data.payload.number;
+
+    var content = '[**' + repo + '**] Pull request by ' + user + ' reopened by ' + actor + ':';
+    content += '\n[' + repo + ':' + baseBranch + ' ← ' + head + ':' + headBranch + ']';
+    content += '\n' + commits + ' commits • ' + changedFiles + ' changed files • ' + additions + ' additions • ' + deletions + ' deletions';
+    content += '\nhttps://github.com/' + repo + '/pull/' + number;
+
+    return content;
+  }
+
+  function issueCommentCreated(data) {
+    var url = data.payload.comment.html_url;
+    var repo = data.repo.name;
+    var actor = data.actor.login;
+    var title = data.payload.issue.title;
+
+    var content = '[**' + repo + '**] New comment on issue:';
+    content += '\n*' + title + '* by *' + actor + '*';
+    content += '\n' + url;
+
+    return content;
+  }
+
+  function issueOpened(data) {
+    var url = data.payload.issue.html_url;
+    var repo = data.repo.name;
+    var actor = data.actor.login;
+    var title = data.payload.issue.title;
+
+    var content = '[**' + repo + '**] Issue opened by ' + actor + ':';
+    content += '\n*' + title + '*';
+    content += '\n' + url;
+
+    return content;
+  }
+
+  function issueClosed(data) {
+    var url = data.payload.issue.html_url;
+    var repo = data.repo.name;
+    var actor = data.actor.login;
+    var title = data.payload.issue.title;
+
+    var content = '[**' + repo + '**] Issue closed by ' + actor + ':';
+    content += '\n*' + title + '*';
+    content += '\n' + url;
+
+    return content;
+  }
+
+  function issueReopened(data) {
+    var url = data.payload.issue.html_url;
+    var repo = data.repo.name;
+    var actor = data.actor.login;
+    var title = data.payload.issue.title;
+
+    var content = '[**' + repo + '**] Issue reopened by ' + actor + ':';
+    content += '\n*' + title + '*';
+    content += '\n' + url;
 
     return content;
   }
@@ -178,7 +272,13 @@
     createTag: createTag,
     deleteBranch: deleteBranch,
     deleteTag: deleteTag,
-    pullRequestOpened: pullRequestOpened
+    pullRequestOpened: pullRequestOpened,
+    pullRequestClosed: pullRequestClosed,
+    pullRequestRepoened: pullRequestRepoened,
+    issueCommentCreated: issueCommentCreated,
+    issueOpened: issueOpened,
+    issueClosed: issueClosed,
+    issueReopened: issueReopened
   };
 
   /**
@@ -390,6 +490,7 @@
     }, {
       key: 'eventPollSuccess',
       value: function eventPollSuccess(response, subscription) {
+        out.info(JSON.stringify(response));
         if (response.status !== 200) {
           out.error('Wrong response code. Expected 200 and got ' + response.status);
           return;
@@ -556,10 +657,28 @@
           case 'PullRequestEvent':
             if (data.payload.action === 'opened') {
               return templates.pullRequestOpened(data);
+            } else if (data.payload.action === 'reopened') {
+              return templates.pullRequestRepoened(data);
+            } else if (data.payload.action === 'closed') {
+              return templates.pullRequestClosed(data);
+            }
+            break;
+          case 'IssueCommentEvent':
+            if (data.payload.action === 'created') {
+              return templates.issueCommentCreated(data);
+            }
+            break;
+          case 'IssuesEvent':
+            if (data.payload.action === 'opened') {
+              return templates.issueOpened(data);
+            } else if (data.payload.action === 'reopened') {
+              return templates.issueReopened(data);
+            } else if (data.payload.action === 'closed') {
+              return templates.issueClosed(data);
             }
             break;
           default:
-            return 'Message!';
+            return 'This event has not yet been implemented (' + data.type + ')';
         }
       }
     }, {

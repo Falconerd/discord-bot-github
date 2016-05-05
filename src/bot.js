@@ -74,6 +74,7 @@ class DiscordBotGithub {
   }
 
   eventPollSuccess(response, subscription) {
+    out.info(JSON.stringify(response));
     if (response.status !== 200) {
       out.error(`Wrong response code. Expected 200 and got ${response.status}`);
       return;
@@ -186,8 +187,17 @@ class DiscordBotGithub {
           return templates.issueCommentCreated(data);
         }
         break;
+      case 'IssuesEvent':
+        if (data.payload.action === 'opened') {
+          return templates.issueOpened(data);
+        } else if (data.payload.action === 'reopened') {
+          return templates.issueReopened(data);
+        } else if (data.payload.action === 'closed') {
+          return templates.issueClosed(data);
+        }
+        break;
       default:
-        return 'Message!';
+        return `This event has not yet been implemented (${data.type})`;
     }
   }
 
