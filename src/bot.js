@@ -74,7 +74,6 @@ class DiscordBotGithub {
   }
 
   eventPollSuccess(response, subscription) {
-    out.info(JSON.stringify(response));
     if (response.status !== 200) {
       out.error(`Wrong response code. Expected 200 and got ${response.status}`);
       return;

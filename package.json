@@ -7,10 +7,7 @@
   "scripts": {
     "prebuild": "eslint src test",
     "build": "rollup -c rollup.umd.config.js && rollup -c rollup.es2015.config.js",
-    "pretest": "rollup -c rollup.test.config.js",
-    "test": "./node_modules/mocha/bin/mocha ./build/test-bundle.js",
-    "test-travis": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -R spec ./build/test-bundle.js",
-    "prepublish": "npm run build && npm test",
+    "prepublish": "npm run build",
     "preexec": "npm run build",
     "exec": "node ."
   },
