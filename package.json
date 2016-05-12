@@ -1,6 +1,6 @@
 {
   "name": "discord-bot-github",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "A bot for discord which consumes the GitHub API and gives you updates.",
   "main": "dist/discord-bot-github.umd.js",
   "jsnext:main": "dist/discord-bot-github.es2015.js",
