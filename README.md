@@ -1,4 +1,4 @@
-# Discord GitHub Bot 0.2.6
+# Discord GitHub Bot 0.2.7
 
 [![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=master)](https://travis-ci.org/Falconerd/discord-bot-github) [![Coverage Status](https://coveralls.io/repos/Falconerd/discord-bot-github/badge.svg?branch=master&service=github)](https://coveralls.io/github/Falconerd/discord-bot-github?branch=master)
 =======
