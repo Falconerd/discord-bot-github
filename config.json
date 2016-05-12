@@ -1,22 +1,23 @@
 {
   "interval": 5000,
-  "email": "falcoderp@gmail.com",
-  "password": "travis-ci",
-  "token": "c6c859bd79aa5ad9d88d62247a534e1e76273dcd",
+  "email": "discordemail@example.com",
+  "password": "discord_password",
+  "token": "github_token",
   "avatar": "somebase64image",
   "subscriptions": [
     {
-      "repository": "Falconerd/multiply",
+      "repository": "User/repository",
       "servers": [
         {
-          "id": "125472919223664640",
+          "id": "1234567891234",
           "invite": "http://discord.gg/1234567890",
           "channels": [
             {
               "name": "github",
               "events": [
                 "Push",
-                "PullRequest"
+                "PullRequest",
+                "Issues"
               ]
             }
           ]
