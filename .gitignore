@@ -20,5 +20,5 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 
-build
-config.json.real
+config.js
+typings
