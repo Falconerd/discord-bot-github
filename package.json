@@ -4,6 +4,7 @@
   "description": "A Discord bot which lets you subscribe to GitHub events and reports about your subscriptions.",
   "main": "js/index.js",
   "scripts": {
+    "pretest": "gulp build:test && gulp build:src",
     "test": "node_modules/.bin/tap build/test --cov"
   },
   "repository": {
