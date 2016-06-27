@@ -1,5 +1,3 @@
-import {Actions} from "./actions";
-
 export class CommandHandler {
   static commands = {
     "add": true,
@@ -16,8 +14,11 @@ export class CommandHandler {
     return true;
   }
 
-  static getCommand(input: string): Function {
-    const command: Array<string> = input.split(" ");
-    return Actions[command[1]];
+  static getCommand(input: string): string {
+    if (CommandHandler.isValid(input)) {
+      return input.split(" ")[1];
+    } else {
+      return undefined;
+    }
   }
 }
