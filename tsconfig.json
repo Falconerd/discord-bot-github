@@ -1,7 +1,20 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es5",
+        "target": "es5"
     },
-    "compileOnSave": false
+    "filesGlob": [
+        "src/**/*.ts",
+        "test/**/*.ts"
+    ],
+    "compileOnSave": false,
+    "files": [
+        "src/command-handler.ts",
+        "src/index.ts",
+        "test/command-handler_test.ts",
+        "test/index_test.ts"
+    ],
+    "atom": {
+        "rewriteTsconfig": true
+    }
 }

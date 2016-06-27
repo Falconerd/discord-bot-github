@@ -5,7 +5,7 @@
   "main": "js/index.js",
   "scripts": {
     "pretest": "gulp build:test && gulp build:src",
-    "test": "node_modules/.bin/tap build/test --cov"
+    "test": "node_modules/.bin/tap build/test -R spec --cov"
   },
   "repository": {
     "type": "git",
