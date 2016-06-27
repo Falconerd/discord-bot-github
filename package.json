@@ -1,0 +1,33 @@
+{
+  "name": "discord-bot-github",
+  "version": "1.0.0",
+  "description": "A Discord bot which lets you subscribe to GitHub events and reports about your subscriptions.",
+  "main": "js/index.js",
+  "scripts": {
+    "test": "node_modules/.bin/tap build/test --cov"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Falconerd/discord-bot-github.git"
+  },
+  "keywords": [
+    "Discord",
+    "GitHub",
+    "Bot"
+  ],
+  "author": "Dylan Falconer <me@falconerd.com> (http://falconerd.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Falconerd/discord-bot-github/issues"
+  },
+  "homepage": "https://github.com/Falconerd/discord-bot-github#readme",
+  "dependencies": {
+    "discord.js": "^8.0.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^2.13.6",
+    "tap": "^5.8.0",
+    "tap-spec": "^4.1.1"
+  }
+}
