@@ -4,3 +4,7 @@ node_js:
 cache:
   directories:
     - node_modules
+services:
+  - mongodb
+before_script:
+  - mongo mydb_test --eval 'db.addUser("travis", "test");'

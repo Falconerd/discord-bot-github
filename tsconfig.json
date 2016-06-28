@@ -9,8 +9,10 @@
     ],
     "compileOnSave": false,
     "files": [
+        "src/actions.ts",
         "src/command-handler.ts",
         "src/index.ts",
+        "test/actions_test.ts",
         "test/command-handler_test.ts",
         "test/index_test.ts"
     ],
