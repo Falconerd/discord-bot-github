@@ -9,33 +9,6 @@
   Discord = 'default' in Discord ? Discord['default'] : Discord;
   axios = 'default' in axios ? axios['default'] : axios;
 
-  var babelHelpers = {};
-
-  babelHelpers.classCallCheck = function (instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-
-  babelHelpers.createClass = (function () {
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-
-    return function (Constructor, protoProps, staticProps) {
-      if (protoProps) defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-  })();
-
-  babelHelpers;
   var _fatal = chalk.bold.red.inverse;
   var _error = chalk.bold.red;
   var _warn = chalk.yellow;
@@ -213,6 +186,19 @@
     return content;
   }
 
+  function commitCommentCreated(data) {
+    var url = data.payload.comment.html_url;
+    var repo = data.repo.name;
+    var actor = data.actor.login;
+    var commitId = data.payload.comment.commit_id;
+
+    var content = '[**' + repo + '**] New comment on commit:';
+    content += '\n*' + commitId.substring(0, 10) + '* by *' + actor + '*';
+    content += '\n' + url;
+
+    return content;
+  }
+
   function issueCommentCreated(data) {
     var url = data.payload.comment.html_url;
     var repo = data.repo.name;
@@ -275,6 +261,7 @@
     pullRequestOpened: pullRequestOpened,
     pullRequestClosed: pullRequestClosed,
     pullRequestRepoened: pullRequestRepoened,
+    commitCommentCreated: commitCommentCreated,
     issueCommentCreated: issueCommentCreated,
     issueOpened: issueOpened,
     issueClosed: issueClosed,
@@ -318,9 +305,114 @@
     return false;
   }
 
-  var DiscordBotGithub = (function () {
+  var jsx = function () {
+    var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol.for && Symbol.for("react.element") || 0xeac7;
+    return function createRawReactElement(type, props, key, children) {
+      var defaultProps = type && type.defaultProps;
+      var childrenLength = arguments.length - 3;
+
+      if (!props && childrenLength !== 0) {
+        props = {};
+      }
+
+      if (props && defaultProps) {
+        for (var propName in defaultProps) {
+          if (props[propName] === void 0) {
+            props[propName] = defaultProps[propName];
+          }
+        }
+      } else if (!props) {
+        props = defaultProps || {};
+      }
+
+      if (childrenLength === 1) {
+        props.children = children;
+      } else if (childrenLength > 1) {
+        var childArray = Array(childrenLength);
+
+        for (var i = 0; i < childrenLength; i++) {
+          childArray[i] = arguments[i + 3];
+        }
+
+        props.children = childArray;
+      }
+
+      return {
+        $$typeof: REACT_ELEMENT_TYPE,
+        type: type,
+        key: key === undefined ? null : '' + key,
+        ref: null,
+        props: props,
+        _owner: null
+      };
+    };
+  }();
+
+  var classCallCheck = function (instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  };
+
+  var createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var slicedToArray = function () {
+    function sliceIterator(arr, i) {
+      var _arr = [];
+      var _n = true;
+      var _d = false;
+      var _e = undefined;
+
+      try {
+        for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+          _arr.push(_s.value);
+
+          if (i && _arr.length === i) break;
+        }
+      } catch (err) {
+        _d = true;
+        _e = err;
+      } finally {
+        try {
+          if (!_n && _i["return"]) _i["return"]();
+        } finally {
+          if (_d) throw _e;
+        }
+      }
+
+      return _arr;
+    }
+
+    return function (arr, i) {
+      if (Array.isArray(arr)) {
+        return arr;
+      } else if (Symbol.iterator in Object(arr)) {
+        return sliceIterator(arr, i);
+      } else {
+        throw new TypeError("Invalid attempt to destructure non-iterable instance");
+      }
+    };
+  }();
+
+  var DiscordBotGithub = function () {
     function DiscordBotGithub(config) {
-      babelHelpers.classCallCheck(this, DiscordBotGithub);
+      classCallCheck(this, DiscordBotGithub);
 
       this.config = config;
       this.email = config.email;
@@ -334,7 +426,7 @@
       this.queue = [];
     }
 
-    babelHelpers.createClass(DiscordBotGithub, [{
+    createClass(DiscordBotGithub, [{
       key: 'start',
       value: function start() {
         this.client.login(this.email, this.password, function (error) {
@@ -522,13 +614,13 @@
 
           try {
             for (var _iterator5 = subscription.servers[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-              var _server = _step5.value;
+              var server = _step5.value;
               var _iteratorNormalCompletion6 = true;
               var _didIteratorError6 = false;
               var _iteratorError6 = undefined;
 
               try {
-                for (var _iterator6 = _server.channels[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                for (var _iterator6 = server.channels[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
                   var channel = _step6.value;
                   var _iteratorNormalCompletion7 = true;
                   var _didIteratorError7 = false;
@@ -542,7 +634,7 @@
                         // Event type is being tracked by this channel...
                         // Queue this message for sending
                         this.queue.push({
-                          id: _server.id,
+                          id: server.id,
                           name: channel.name,
                           content: this.constructMessage(data)
                         });
@@ -639,6 +731,8 @@
               return templates.push(data);
             }
             return templates.pushMulti(data);
+          case 'CommitCommentEvent':
+            return templates.commitCommentCreated(data);
           case 'CreateEvent':
             if (data.payload.ref_type === 'branch') {
               return templates.createBranch(data);
@@ -689,15 +783,15 @@
 
         try {
           for (var _iterator8 = this.client.servers[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-            var _server2 = _step8.value;
+            var server = _step8.value;
 
-            if (_server2.id === id) {
+            if (server.id === id) {
               var _iteratorNormalCompletion9 = true;
               var _didIteratorError9 = false;
               var _iteratorError9 = undefined;
 
               try {
-                for (var _iterator9 = _server2.channels[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+                for (var _iterator9 = server.channels[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
                   var channel = _step9.value;
 
                   if (channel.type === 'text' && channel.name === name) {
@@ -747,7 +841,7 @@
       }
     }]);
     return DiscordBotGithub;
-  })();
+  }();
 
   if (process && process.argv.length >= 3) {
     fs.readFile(process.argv[2], function (err, config) {
