@@ -158,6 +158,8 @@ class DiscordBotGithub {
           return templates.push(data);
         }
         return templates.pushMulti(data);
+      case 'CommitCommentEvent':
+        return templates.commitCommentCreated(data)
       case 'CreateEvent':
         if (data.payload.ref_type === 'branch') {
           return templates.createBranch(data);

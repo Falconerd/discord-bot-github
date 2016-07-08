@@ -123,6 +123,19 @@ function pullRequestRepoened(data) {
   return content;
 }
 
+function commitCommentCreated(data) {
+  const url = data.payload.comment.html_url;
+  const repo = data.repo.name;
+  const actor = data.actor.login;
+  const commitId = data.payload.comment.commit_id;
+
+  let content = `[**${repo}**] New comment on commit:`;
+  content += `\n*${commitId.substring(0,10)}* by *${actor}*`;
+  content += `\n${url}`;
+
+  return content;
+}
+
 function issueCommentCreated(data) {
   const url = data.payload.comment.html_url;
   const repo = data.repo.name;
@@ -186,6 +199,7 @@ export default {
   pullRequestOpened,
   pullRequestClosed,
   pullRequestRepoened,
+  commitCommentCreated,
   issueCommentCreated,
   issueOpened,
   issueClosed,

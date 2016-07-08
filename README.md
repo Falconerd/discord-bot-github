@@ -38,7 +38,7 @@ config.js[on] options listed below
 - [ ] Electron based configuration wrapper for those who don't like JSON
 
 ## Events
-- [ ] __CommitCommentEvent__ - Triggered when a commit comment is created.
+- [x] __CommitCommentEvent__ - Triggered when a commit comment is created.
 - [ ] __CreateEvent__ - Represents a created repository, branch, or tag.
   - [ ] Repository
   - [x] Branch
