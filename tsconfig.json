@@ -11,6 +11,7 @@
     "files": [
         "src/actions.ts",
         "src/command-handler.ts",
+        "src/config.ts",
         "src/index.ts",
         "test/actions_test.ts",
         "test/command-handler_test.ts",

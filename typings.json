@@ -3,6 +3,7 @@
     "discord.js": "github:nicholastay/discord.js.d.ts",
     "mongodb": "registry:dt/mongodb#2.1.0+20160602142941",
     "node": "registry:dt/node#6.0.0+20160621231320",
+    "promise": "registry:dt/promise#7.1.1+20160602154553",
     "require": "registry:dt/require#2.1.20+20160316155526"
   }
 }

@@ -24,7 +24,8 @@
   "homepage": "https://github.com/Falconerd/discord-bot-github#readme",
   "dependencies": {
     "discord.js": "^8.0.0",
-    "mongodb": "^2.1.18"
+    "mongodb": "^2.2.0",
+    "promise": "^7.1.1"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
