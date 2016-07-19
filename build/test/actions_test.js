@@ -1,7 +1,6 @@
 "use strict";
 var tap = require("tap");
 var actions_1 = require("../src/actions");
-tap.ok(false, "test");
 tap.test("#add", function (t) {
     t.ok(actions_1.Actions.add("Falconerd/multiply", null), "Expect true as sub was added");
     t.end();

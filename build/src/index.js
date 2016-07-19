@@ -7,27 +7,21 @@ var bot = new discord_js_1.Client({
     autoReconnect: true
 });
 bot.on("message", function (message) {
+    if (message.author.id === bot.user.id)
+        return;
     var command = command_handler_1.CommandHandler.getCommand(message.content);
     if (command) {
-        if (command.command === "add" && command.arguments.length) {
-            actions_1.Actions.add(command.arguments[0], message.channel.id)
+        var id = (command.command === "token") ? message.author.id : message.channel.id;
+        if (command.command !== "help") {
+            return actions_1.Actions[command.command](command.argument, id)
                 .then(function (result) {
-                bot.sendMessage(message.channel.id, "Added subscription.");
-            }).catch(function (err) {
-                bot.sendMessage(message.channel.id, "Error: " + err);
+                bot.sendMessage(message.channel.id, result);
+            })
+                .catch(function (err) {
+                bot.sendMessage(message.channel.id, err);
             });
         }
-        else if (command.command === "remove" && command.arguments.length) {
-            actions_1.Actions.remove(command.arguments[0], message.channel.id);
-        }
-        else if (command.command === "token") {
-            if (command.arguments.length) {
-                actions_1.Actions.addToken(command.arguments[0], message.author.id);
-            }
-            else {
-                actions_1.Actions.removeToken(command.arguments[0], message.author.id);
-            }
-        }
     }
+    actions_1.Actions.help(bot, message.channel.id);
 });
 bot.loginWithToken(config_1.config.token);

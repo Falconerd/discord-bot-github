@@ -14,7 +14,7 @@ var CommandHandler = (function () {
     };
     CommandHandler.getCommand = function (input) {
         if (CommandHandler.isValid(input)) {
-            return { command: input.split(" ")[1], arguments: input.split(" ").slice(2) };
+            return { command: input.split(" ")[1], argument: input.split(" ")[2] };
         }
         else {
             return undefined;

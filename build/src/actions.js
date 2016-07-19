@@ -12,14 +12,21 @@ var Actions = (function () {
             MongoClient.connect(config_1.config.db, function (err, db) {
                 if (err)
                     reject(err);
-                db.collection("subscriptions").insertOne({
+                var cursor = db.collection("subscriptions").deleteMany({
                     "repo": repo,
                     "channelId": channelId
                 }, function (err, result) {
                     if (err)
                         reject(err);
-                    db.close();
-                    resolve(true);
+                    db.collection("subscriptions").insertOne({
+                        "repo": repo,
+                        "channelId": channelId
+                    }, function (err, result) {
+                        if (err)
+                            reject(err);
+                        db.close();
+                        resolve("Successfully added a new subscription. " + repo + " <-> " + channelId);
+                    });
                 });
             });
         });
@@ -32,14 +39,22 @@ var Actions = (function () {
                 db.collection("subscriptions").deleteOne({
                     "repo": repo,
                     "channelId": channelId
-                }, function (err, results) {
+                }, function (err, result) {
                     if (err)
                         reject(err);
                     db.close();
-                    resolve(true);
+                    resolve(result);
                 });
             });
         });
+    };
+    Actions.token = function (token, userId) {
+        if (token) {
+            Actions.addToken(token, userId);
+        }
+        else {
+            Actions.removeToken(token, userId);
+        }
     };
     Actions.addToken = function (token, userId) {
         return new Promise(function (resolve, reject) {
@@ -53,7 +68,7 @@ var Actions = (function () {
                     if (err)
                         reject(err);
                     db.close();
-                    resolve(true);
+                    resolve(result);
                 });
             });
         });
@@ -70,17 +85,14 @@ var Actions = (function () {
                     if (err)
                         reject(err);
                     db.close();
-                    resolve(true);
+                    resolve(result);
                 });
             });
         });
     };
-    Actions.help = function (client, channel) {
-        var helpMessage = "\nUsage: !dbg <command> [value]\n\nCommands:\n  add <repo> ....... adds a subscription for the current channel\n  remove <repo> .... removes a subscription for the current channel\n  token [token] .... adds a GitHub personal access token. If no value is given,\n                     tokens linked to this user will be removed.\n  help ............. displays this text";
-        client.sendMessage(channel, helpMessage, {}, function (error, message) {
-            if (error)
-                console.log(error);
-        });
+    Actions.help = function (client, channelId) {
+        var helpMessage = "```\nUsage: !dbg <command> [value]\n\nCommands:\n  add <repo> ....... adds a subscription for the current channel\n  remove <repo> .... removes a subscription for the current channel\n  token [token] .... adds a GitHub personal access token. If no value is given, tokens linked to this user will be removed.\n  help ............. displays this text```";
+        client.sendMessage(channelId, helpMessage);
     };
     return Actions;
 }());
