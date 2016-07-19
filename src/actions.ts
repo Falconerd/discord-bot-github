@@ -10,13 +10,12 @@ export class Actions {
   static add(repo: string, channelId: string): any {
     return new Promise<boolean>(function(resolve, reject) {
       MongoClient.connect(config.db, function(err, db) {
-        if (err) reject(false);
+        if (err) reject(err);
         db.collection("subscriptions").insertOne({
           "repo": repo,
           "channelId": channelId
         }, function(err, result) {
-          if (err) reject(false);
-          console.log("Added a new subscription.");
+          if (err) reject(err);
           db.close();
           resolve(true);
         });
@@ -27,12 +26,12 @@ export class Actions {
   static remove(repo: string, channelId: string): any {
     return new Promise<boolean>(function(resolve, reject) {
       MongoClient.connect(config.db, function(err, db) {
-        if (err) reject(false);
+        if (err) reject(err);
         db.collection("subscriptions").deleteOne({
           "repo": repo,
           "channelId": channelId
         }, function(err, results) {
-          if (err) reject(false);
+          if (err) reject(err);
           db.close();
           resolve(true);
         });
@@ -40,16 +39,31 @@ export class Actions {
     });
   }
 
-  static token(userId: string, token: string): any {
+  static addToken(token: string, userId: string): any {
     return new Promise<boolean>(function(resolve, reject) {
       MongoClient.connect(config.db, function(err, db) {
-        if (err) reject(false);
+        if (err) reject(err);
         db.collection("tokens").insertOne({
           "userId": userId,
           "token": token
         }, function(err, result) {
-          if (err) reject(false);
-          console.log("Added a new token.");
+          if (err) reject(err);
+          db.close();
+          resolve(true);
+        });
+      });
+    });
+  }
+
+  static removeToken(token: string, userId: string): any {
+    return new Promise<boolean>(function(resolve, reject) {
+      MongoClient.connect(config.db, function(err, db) {
+        if (err) reject(err);
+        db.collection("tokens").deleteOne({
+          "userId": userId,
+          "token": token
+        }, function(err, result) {
+          if (err) reject(err);
           db.close();
           resolve(true);
         });
