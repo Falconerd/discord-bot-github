@@ -1,5 +1,5 @@
-import mongodb = require("mongodb");
-import Promise = require("promise");
+import mongodb from "mongodb";
+import {Promise} from "promise";
 import {Client} from "discord.js";
 import {config} from "./config";
 
