@@ -62,7 +62,7 @@ function sendMessages(repo: string, message: string) {
       }, function(err, result) {
         if (err) reject(err);
         db.close();
-        console.log(">>" + result);
+        console.log(">>" + JSON.stringify(result));
         for (let subscription of result) {
           if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
             bot.sendMessage(subscription.channelId, message);
