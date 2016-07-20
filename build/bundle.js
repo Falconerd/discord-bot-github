@@ -4,8 +4,8 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var express = _interopDefault(require('express'));
 var bodyParser = _interopDefault(require('body-parser'));
-var discord_js = require('discord.js');
 var mongodb = _interopDefault(require('mongodb'));
+var discord_js = require('discord.js');
 var promise = require('promise');
 
 var CommandChecker = (function () {
@@ -46,13 +46,13 @@ var config = (function () {
     return config;
 }());
 
-var MongoClient = mongodb.MongoClient;
+var MongoClient$1 = mongodb.MongoClient;
 var Actions = (function () {
     function Actions() {
     }
     Actions.add = function (repo, channelId) {
         return new promise.Promise(function (resolve, reject) {
-            MongoClient.connect(config.db, function (err, db) {
+            MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);
                 db.collection("subscriptions").deleteMany({
@@ -76,7 +76,7 @@ var Actions = (function () {
     };
     Actions.remove = function (repo, channelId) {
         return new promise.Promise(function (resolve, reject) {
-            MongoClient.connect(config.db, function (err, db) {
+            MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);
                 db.collection("subscriptions").deleteOne({
@@ -101,7 +101,7 @@ var Actions = (function () {
     };
     Actions.addToken = function (token, userId) {
         return new promise.Promise(function (resolve, reject) {
-            MongoClient.connect(config.db, function (err, db) {
+            MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);
                 db.collection("tokens").deleteMany({
@@ -125,7 +125,7 @@ var Actions = (function () {
     };
     Actions.removeToken = function (token, userId) {
         return new promise.Promise(function (resolve, reject) {
-            MongoClient.connect(config.db, function (err, db) {
+            MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);
                 db.collection("tokens").deleteOne({
@@ -147,6 +147,97 @@ var Actions = (function () {
     return Actions;
 }());
 
+var Events = (function () {
+    function Events() {
+    }
+    Events.commit_comment = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.create = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.delete = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.deployment = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.deployment_status = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.fork = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.gollum = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.issue_comment = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.issues = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.member = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.membership = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.page_build = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.public = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.pull_request_review_comment = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.pull_request = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.push = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.repository = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.release = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.status = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.team_add = function (data) {
+        var message = "";
+        return message;
+    };
+    Events.watch = function (data) {
+        var message = "";
+        return message;
+    };
+    return Events;
+}());
+
+var MongoClient = mongodb.MongoClient;
 var bot = new discord_js.Client({
     autoReconnect: true
 });
@@ -176,7 +267,31 @@ bot.loginWithToken(config.token, null, null, function (error) {
 var app = express();
 app.use(bodyParser.json());
 app.post("/", function (req, res) {
-    // console.log(req.body);
-    console.log(req.get("X-GitHub-Event"));
+    var event = req.get("X-GitHub-Event");
+    var message = Events[event](req.body);
+    var repo = req.body.repository.full_name;
+    sendMessages(repo, message);
 });
+function sendMessages(repo, message) {
+    return new Promise(function (resolve, reject) {
+        MongoClient.connect(config.db, function (err, db) {
+            if (err)
+                reject(err);
+            db.collection("subscriptions").find({
+                "repo": repo
+            }, function (err, result) {
+                if (err)
+                    reject(err);
+                db.close();
+                console.log(">>" + result);
+                for (var _i = 0, result_1 = result; _i < result_1.length; _i++) {
+                    var subscription = result_1[_i];
+                    if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
+                        bot.sendMessage(subscription.channelId, message);
+                    }
+                }
+            });
+        });
+    });
+}
 app.listen(process.env.PORT || 8080);

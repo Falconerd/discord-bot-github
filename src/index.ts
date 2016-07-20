@@ -4,7 +4,10 @@ import mongodb from "mongodb";
 import {Client, Message} from "discord.js";
 import {CommandChecker} from "./command-checker";
 import {Actions} from "./actions";
+import {Events} from "./events";
 import {config} from "./config" ;
+
+const MongoClient = mongodb.MongoClient;
 
 const bot = new Client({
   autoReconnect: true
@@ -36,12 +39,38 @@ bot.loginWithToken(config.token, null, null, function(error) {
   console.log("Logged in!");
 });
 
+const events: any = {};
+
+events.commit_comment = function(data) {}
+
 const app = express();
 
 app.use(bodyParser.json());
 app.post("/", function(req, res) {
-  // console.log(req.body);
-  console.log(req.get("X-GitHub-Event"));
+  const event = req.get("X-GitHub-Event");
+  const message = Events[event](req.body);
+  const repo = req.body.repository.full_name;
+  sendMessages(repo, message);
 });
+
+function sendMessages(repo: string, message: string) {
+  return new Promise(function(resolve, reject) {
+    MongoClient.connect(config.db, function(err, db) {
+      if (err) reject(err);
+      db.collection("subscriptions").find({
+        "repo": repo
+      }, function(err, result) {
+        if (err) reject(err);
+        db.close();
+        console.log(">>" + result);
+        for (let subscription of result) {
+          if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
+            bot.sendMessage(subscription.channelId, message);
+          }
+        }
+      });
+    });
+  });
+}
 
 app.listen(process.env.PORT || 8080);

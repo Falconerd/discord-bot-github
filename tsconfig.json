@@ -12,6 +12,7 @@
         "src/actions.ts",
         "src/command-checker.ts",
         "src/config.ts",
+        "src/events.ts",
         "src/index.ts",
         "test/actions_test.ts",
         "test/command-handler_test.ts",
