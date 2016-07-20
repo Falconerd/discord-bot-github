@@ -70,6 +70,7 @@ function sendMessages(repo: string, message: string) {
               bot.sendMessage(subscription.channelId, message);
             }
           }
+          db.close();
       });
     });
   });

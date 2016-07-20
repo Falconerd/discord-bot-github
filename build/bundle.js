@@ -291,6 +291,7 @@ function sendMessages(repo, message) {
                         bot.sendMessage(subscription.channelId, message);
                     }
                 }
+                db.close();
             });
         });
     });
