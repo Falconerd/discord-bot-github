@@ -17,7 +17,7 @@ export class Actions {
         }, function(err, result) {
           if (err) reject(err);
           db.collection("subscriptions").insertOne({
-            "repo": repo,
+            "repo": repo.toLowerCase(),
             "channelId": channelId
           }, function(err, result) {
             if (err) reject(err);
@@ -34,7 +34,7 @@ export class Actions {
       MongoClient.connect(config.db, function(err, db) {
         if (err) reject(err);
         db.collection("subscriptions").deleteOne({
-          "repo": repo,
+          "repo": repo.toLowerCase(),
           "channelId": channelId
         }, function(err, result) {
           if (err) reject(err);

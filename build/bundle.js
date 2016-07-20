@@ -62,7 +62,7 @@ var Actions = (function () {
                     if (err)
                         reject(err);
                     db.collection("subscriptions").insertOne({
-                        "repo": repo,
+                        "repo": repo.toLowerCase(),
                         "channelId": channelId
                     }, function (err, result) {
                         if (err)
@@ -80,7 +80,7 @@ var Actions = (function () {
                 if (err)
                     reject(err);
                 db.collection("subscriptions").deleteOne({
-                    "repo": repo,
+                    "repo": repo.toLowerCase(),
                     "channelId": channelId
                 }, function (err, result) {
                     if (err)
@@ -283,13 +283,12 @@ function sendMessages(repo, message) {
             })
                 .toArray(function (err, subscriptions) {
                 console.log(subscriptions);
-                /*
-                for (let subscription of subscriptions) {
-                  if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
-                    bot.sendMessage(subscription.channelId, message);
-                  }
+                for (var _i = 0, subscriptions_1 = subscriptions; _i < subscriptions_1.length; _i++) {
+                    var subscription = subscriptions_1[_i];
+                    if (subscription.repo === repo.toLowerCase()) {
+                        bot.sendMessage(subscription.channelId, message);
+                    }
                 }
-                */
             });
         });
     });

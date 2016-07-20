@@ -63,13 +63,11 @@ function sendMessages(repo: string, message: string) {
       })
       .toArray(function(err, subscriptions) {
           console.log(subscriptions);
-          /*
           for (let subscription of subscriptions) {
-            if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
+            if (subscription.repo === repo.toLowerCase()) {
               bot.sendMessage(subscription.channelId, message);
             }
           }
-          */
       });
     });
   });
