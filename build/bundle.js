@@ -171,6 +171,7 @@ bot.on("message", function (message) {
 bot.loginWithToken(config.token, null, null, function (error) {
     if (error)
         return console.log(error);
+    console.log("Logged in!");
 });
 var app = express();
 app.use(bodyParser.json());

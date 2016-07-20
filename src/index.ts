@@ -33,6 +33,7 @@ bot.on("message", function(message: Message) {
 
 bot.loginWithToken(config.token, null, null, function(error) {
   if (error) return console.log(error);
+  console.log("Logged in!");
 });
 
 const app = express();
