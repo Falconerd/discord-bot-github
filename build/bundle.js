@@ -269,7 +269,7 @@ app.use(bodyParser.json());
 app.post("/", function (req, res) {
     var event = req.get("X-GitHub-Event");
     var message = Events[event](req.body);
-    var repo = req.body.repository.full_name;
+    var repo = req.body.repository.full_name.toLowerCase();
     console.log("repo: ", repo);
     sendMessages(repo, message);
     res.send(200);
