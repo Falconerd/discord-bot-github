@@ -59,15 +59,15 @@ function sendMessages(repo: string, message: string) {
       if (err) reject(err);
       db.collection("subscriptions").find({
         "repo": repo
-      }, function(err, result) {
-        if (err) reject(err);
-        db.close();
-        console.dir(result);
-        for (let subscription of result) {
-          if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
-            bot.sendMessage(subscription.channelId, message);
+      }, function(err, cursor) {
+        cursor.toArray(function(subscriptions) {
+          console.log(subscriptions);
+          for (let subscription of subscriptions) {
+            if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
+              bot.sendMessage(subscription.channelId, message);
+            }
           }
-        }
+        });
       });
     });
   });
