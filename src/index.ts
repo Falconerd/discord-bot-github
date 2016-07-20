@@ -1,5 +1,5 @@
-import * as express from "express";
-import * as bodyParser from "body-parser";
+import express from "express";
+import bodyParser from "body-parser";
 import {Client, Message} from "discord.js";
 import {CommandChecker} from "./command-checker";
 import {Actions} from "./actions";
