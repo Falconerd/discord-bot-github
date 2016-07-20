@@ -280,16 +280,16 @@ function sendMessages(repo, message) {
                 reject(err);
             db.collection("subscriptions").find({
                 "repo": repo
-            }, function (err, cursor) {
-                cursor.toArray(function (subscriptions) {
-                    console.log(subscriptions);
-                    for (var _i = 0, subscriptions_1 = subscriptions; _i < subscriptions_1.length; _i++) {
-                        var subscription = subscriptions_1[_i];
-                        if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
-                            bot.sendMessage(subscription.channelId, message);
-                        }
-                    }
-                });
+            })
+                .toArray(function (err, subscriptions) {
+                console.log(subscriptions);
+                /*
+                for (let subscription of subscriptions) {
+                  if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
+                    bot.sendMessage(subscription.channelId, message);
+                  }
+                }
+                */
             });
         });
     });

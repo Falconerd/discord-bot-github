@@ -60,15 +60,16 @@ function sendMessages(repo: string, message: string) {
       if (err) reject(err);
       db.collection("subscriptions").find({
         "repo": repo
-      }, function(err, cursor) {
-        cursor.toArray(function(subscriptions) {
+      })
+      .toArray(function(err, subscriptions) {
           console.log(subscriptions);
+          /*
           for (let subscription of subscriptions) {
             if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
               bot.sendMessage(subscription.channelId, message);
             }
           }
-        });
+          */
       });
     });
   });
