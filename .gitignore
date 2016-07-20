@@ -23,6 +23,3 @@ node_modules
 
 config.js
 typings
-
-src/config.ts
-src/config.js
