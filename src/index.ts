@@ -50,6 +50,7 @@ app.post("/", function(req, res) {
   const event = req.get("X-GitHub-Event");
   const message = Events[event](req.body);
   const repo = req.body.repository.full_name;
+  console.log("repo: ", repo);
   sendMessages(repo, message);
 });
 
