@@ -176,6 +176,7 @@ bot.loginWithToken(config.token, null, null, function (error) {
 var app = express();
 app.use(bodyParser.json());
 app.post("/", function (req, res) {
-    console.log(req.body);
+    // console.log(req.body);
+    console.log(req.body.action);
 });
 app.listen(process.env.PORT || 8080);

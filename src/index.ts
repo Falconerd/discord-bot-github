@@ -40,7 +40,8 @@ const app = express();
 
 app.use(bodyParser.json());
 app.post("/", function(req, res) {
-  console.log(req.body);
+  // console.log(req.body);
+  console.log(req.body.action);
 });
 
 app.listen(process.env.PORT || 8080);
