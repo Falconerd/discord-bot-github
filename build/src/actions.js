@@ -12,7 +12,7 @@ var Actions = (function () {
             MongoClient.connect(config_1.config.db, function (err, db) {
                 if (err)
                     reject(err);
-                var cursor = db.collection("subscriptions").deleteMany({
+                db.collection("subscriptions").deleteMany({
                     "repo": repo,
                     "channelId": channelId
                 }, function (err, result) {
@@ -43,7 +43,7 @@ var Actions = (function () {
                     if (err)
                         reject(err);
                     db.close();
-                    resolve(result);
+                    resolve("Successfuly removed a subscription. " + repo + " </> " + channelId);
                 });
             });
         });
@@ -61,14 +61,21 @@ var Actions = (function () {
             MongoClient.connect(config_1.config.db, function (err, db) {
                 if (err)
                     reject(err);
-                db.collection("tokens").insertOne({
+                db.collection("tokens").deleteMany({
                     "userId": userId,
                     "token": token
                 }, function (err, result) {
                     if (err)
                         reject(err);
-                    db.close();
-                    resolve(result);
+                    db.collection("tokens").insertOne({
+                        "userId": userId,
+                        "token": token
+                    }, function (err, result) {
+                        if (err)
+                            reject(err);
+                        db.close();
+                        resolve("Successfully added a token.");
+                    });
                 });
             });
         });
@@ -85,7 +92,7 @@ var Actions = (function () {
                     if (err)
                         reject(err);
                     db.close();
-                    resolve(result);
+                    resolve("Successfully removed a token.");
                 });
             });
         });

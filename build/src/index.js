@@ -1,6 +1,8 @@
 "use strict";
+var express = require("express");
+var bodyParser = require("body-parser");
 var discord_js_1 = require("discord.js");
-var command_handler_1 = require("./command-handler");
+var command_checker_1 = require("./command-checker");
 var actions_1 = require("./actions");
 var config_1 = require("./config");
 var bot = new discord_js_1.Client({
@@ -9,7 +11,7 @@ var bot = new discord_js_1.Client({
 bot.on("message", function (message) {
     if (message.author.id === bot.user.id)
         return;
-    var command = command_handler_1.CommandHandler.getCommand(message.content);
+    var command = command_checker_1.CommandChecker.getCommand(message.content);
     if (command) {
         var id = (command.command === "token") ? message.author.id : message.channel.id;
         if (command.command !== "help") {
@@ -24,4 +26,13 @@ bot.on("message", function (message) {
     }
     actions_1.Actions.help(bot, message.channel.id);
 });
-bot.loginWithToken(config_1.config.token);
+bot.loginWithToken(config_1.config.token, null, null, function (error) {
+    if (error)
+        return console.log(error);
+});
+var app = express();
+app.use(bodyParser.json());
+app.post("/", function (req, res) {
+    console.log(req.body);
+});
+app.listen(8080);
