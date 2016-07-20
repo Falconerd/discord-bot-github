@@ -52,6 +52,7 @@ app.post("/", function(req, res) {
   const repo = req.body.repository.full_name;
   console.log("repo: ", repo);
   sendMessages(repo, message);
+  res.send(200);
 });
 
 function sendMessages(repo: string, message: string) {
@@ -65,6 +66,7 @@ function sendMessages(repo: string, message: string) {
           console.log(subscriptions);
           for (let subscription of subscriptions) {
             if (subscription.repo === repo.toLowerCase()) {
+              console.log("Sending:", repo, message);
               bot.sendMessage(subscription.channelId, message);
             }
           }

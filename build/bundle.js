@@ -272,6 +272,7 @@ app.post("/", function (req, res) {
     var repo = req.body.repository.full_name;
     console.log("repo: ", repo);
     sendMessages(repo, message);
+    res.send(200);
 });
 function sendMessages(repo, message) {
     return new Promise(function (resolve, reject) {
@@ -286,6 +287,7 @@ function sendMessages(repo, message) {
                 for (var _i = 0, subscriptions_1 = subscriptions; _i < subscriptions_1.length; _i++) {
                     var subscription = subscriptions_1[_i];
                     if (subscription.repo === repo.toLowerCase()) {
+                        console.log("Sending:", repo, message);
                         bot.sendMessage(subscription.channelId, message);
                     }
                 }
