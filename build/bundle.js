@@ -283,9 +283,9 @@ function sendMessages(repo, message) {
                 if (err)
                     reject(err);
                 db.close();
-                console.log(">>" + JSON.stringify(result));
                 for (var _i = 0, result_1 = result; _i < result_1.length; _i++) {
                     var subscription = result_1[_i];
+                    console.log(JSON.stringify(subscription));
                     if (subscription.repo.toLowerCase() === repo.toLowerCase()) {
                         bot.sendMessage(subscription.channelId, message);
                     }
