@@ -1,9 +1,11 @@
+import * as express from "express";
+import * as bodyParser from "body-parser";
 import {Client, Message} from "discord.js";
-import {CommandChecker} from "./command-handler";
+import {CommandChecker} from "./command-checker";
 import {Actions} from "./actions";
 import {config} from "./config" ;
 
-var bot = new Client({
+const bot = new Client({
   autoReconnect: true
 });
 
@@ -28,4 +30,15 @@ bot.on("message", function(message: Message) {
   Actions.help(bot, message.channel.id);
 });
 
-bot.loginWithToken(config.token);
+bot.loginWithToken(config.token, null, null, function(error) {
+  if (error) return console.log(error);
+});
+
+const app = express();
+
+app.use(bodyParser.json());
+app.post("/", function(req, res) {
+  console.log(req.body);
+});
+
+app.listen(8080);

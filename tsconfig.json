@@ -10,7 +10,7 @@
     "compileOnSave": false,
     "files": [
         "src/actions.ts",
-        "src/command-handler.ts",
+        "src/command-checker.ts",
         "src/config.ts",
         "src/index.ts",
         "test/actions_test.ts",

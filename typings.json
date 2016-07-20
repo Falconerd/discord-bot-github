@@ -1,6 +1,8 @@
 {
   "globalDependencies": {
+    "body-parser": "registry:dt/body-parser#0.0.0+20160619023215",
     "discord.js": "github:nicholastay/discord.js.d.ts",
+    "express": "registry:dt/express#4.0.0+20160708185218",
     "mongodb": "registry:dt/mongodb#2.1.0+20160602142941",
     "node": "registry:dt/node#6.0.0+20160621231320",
     "promise": "registry:dt/promise#7.1.1+20160602154553",
