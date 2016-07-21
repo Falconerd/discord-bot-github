@@ -10,26 +10,23 @@ export class Events {
   }
 
   static create(data) {
-    let message: string = "";
     const type = data.ref_type;
     const repo = data.repository.full_name;
     const user = data.sender.login;
-    message += `[**${repo}**] ${user} created a ${type}: ${data.ref}`;
-    return message;
+    return `[**${repo}**] ${user} created a ${type}: ${data.ref}`;
   }
 
   static delete(data) {
-    let message: string = "";
     const type = data.ref_type;
     const repo = data.repository.full_name;
     const user = data.sender.login;
-    message += `[**${repo}**] ${user} deleted a ${type}: ${data.ref}`;
-    return message;
+    return `[**${repo}**] ${user} deleted a ${type}: ${data.ref}`;
   }
 
   static deployment(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    const branch = data.ref;
+    return `[**${repo}:${branch}**] Deployment event`;
   }
 
   static deployment_status(data) {
