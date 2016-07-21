@@ -1,6 +1,6 @@
 export class Events {
   static commit_comment(data) {
-    let message: string = "";
+    let message = "";
     const repo = data.repository.full_name;
     const commit = data.comment.commit_id.substring(0, 7);
     const user = data.comment.user.login;
@@ -24,70 +24,94 @@ export class Events {
   }
 
   static deployment(data) {
-    const repo = data.repository.full_name;
-    const branch = data.ref;
-    return `[**${repo}:${branch}**] Deployment event`;
+    return null;
   }
 
   static deployment_status(data) {
-    const repo = data.repository.full_name;
-    const branch = data.ref;
-    const state = data.state;
-    return `[**${repo}:${branch}**] Deployment ${state}`;
+    return null;
   }
 
   static fork(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    const fork = data.forkee.full_name;
+    return `[**${repo}**] -> *${fork}*\nFork created.`;
   }
 
   static gollum(data) {
-    let message: string = "";
+    const repo = data.repository.full_name;
+    const user = data.sender.login;
+    const pages = JSON.stringify(data.pages, null, 2);
+    let message = `[**${repo}**] Wiki was updated by ${user}.`;
+    message += `\`\`\`${pages}\`\`\``;
     return message;
   }
 
   static issue_comment(data) {
-    let message: string = "";
+    const repo = data.repoitory.full_name;
+    const user = data.comment.user.login;
+    const url = data.comment.html_url;
+    const body = data.comment.body;
+    const title = data.issue.title;
+    let message = `[**${repo}**] Comment created on issue: ${title}`;
+    message += `\n${url}`;
+    message += `\n${body}`;
     return message;
   }
 
   static issues(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    const action = data.action;
+    const user = data.issue.user.login;
+    const url = data.issue.html_url;
+    return `[**${repo}**] Issue ${action} by ${user}\n${url}`;
   }
 
   static member(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    const user = data.member.login;
+    const url = data.member.html_url;
+    return `[**${repo}**] New collaborator added: ${user}\n${url}`;
   }
 
   static membership(data) {
-    let message: string = "";
-    return message;
+    return null;
   }
 
   static page_build(data) {
-    let message: string = "";
-    return message;
+    return null;
   }
 
   static public(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    return `[**${repo}**] Has been made open source!`;
   }
 
   static pull_request_review_comment(data) {
-    let message: string = "";
+    const repo = data.repository.full_name;
+    const action = data.action;
+    const user = data.comment.user.login;
+    const body = data.comment.body;
+    const url = data.comment.html_url;
+    let message = `[**${repo}**] Pull Request comment ${action} by ${user}:`;
+    message += `\n${body}`;
+    message += `\n${url}`;
     return message;
   }
 
   static pull_request(data) {
-    let message: string = "";
+    const repo = data.repository.full_name;
+    const action = data.action;
+    const user = data.pull_request.user.login;
+    const body = data.pull_request.body;
+    const url = data.pull_request.html_url;
+    let message = `[**${repo}**] Pull Request ${action} by ${user}:`;
+    message += `\n${body}`;
+    message += `\n${url}`;
     return message;
   }
 
   static push(data) {
-    let message: string = "";
+    let message = "";
     const repo = data.repository.full_name;
     const branch = data.ref.split("/")[2];
     if (data.commits.length === 1) {
@@ -115,28 +139,28 @@ export class Events {
   }
 
   static repository(data) {
-    let message: string = "";
-    return message;
+    return null;
   }
 
   static release(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    const user = data.release.author.login;
+    const url = data.release.html_url;
+    return `[**${repo}**] Release published by ${user}:\n${url}`;
   }
 
   static status(data) {
-    let message: string = "";
-    return message;
+    return null;
   }
 
   static team_add(data) {
-    let message: string = "";
-    return message;
+    return null;
   }
 
   static watch(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    const user = data.sender.login;
+    return `[**${repo}**] Starred by ${user}`;
   }
 
 }
