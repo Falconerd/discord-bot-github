@@ -306,8 +306,11 @@ bot.on("message", function (message) {
     var command = CommandChecker.getCommand(message.content);
     if (command) {
         var id = (command.command === "token") ? message.author.id : message.channel.id;
-        if (command.command !== "help") {
-            return Actions[command.command](command.argument, id)
+        if (command.command === "help") {
+            Actions.help(bot, message.channel.id);
+        }
+        else {
+            Actions[command.command](command.argument, id)
                 .then(function (result) {
                 bot.sendMessage(message.channel.id, result);
             })
@@ -316,7 +319,6 @@ bot.on("message", function (message) {
             });
         }
     }
-    Actions.help(bot, message.channel.id);
 });
 bot.loginWithToken(config.token, null, null, function (error) {
     if (error)
