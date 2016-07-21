@@ -30,8 +30,10 @@ export class Events {
   }
 
   static deployment_status(data) {
-    let message: string = "";
-    return message;
+    const repo = data.repository.full_name;
+    const branch = data.ref;
+    const state = data.state;
+    return `[**${repo}:${branch}**] Deployment ${state}`;
   }
 
   static fork(data) {
