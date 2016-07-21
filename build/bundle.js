@@ -161,6 +161,9 @@ var Events = (function () {
     };
     Events.create = function (data) {
         var message = "";
+        var type = data.ref_type;
+        var repo = data.repository.full_name;
+        message += "[**" + repo + "**] New {type} created";
         return message;
     };
     Events.delete = function (data) {

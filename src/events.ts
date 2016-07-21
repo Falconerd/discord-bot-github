@@ -11,6 +11,9 @@ export class Events {
 
   static create(data) {
     let message: string = "";
+    const type = data.ref_type;
+    const repo = data.repository.full_name;
+    message += `[**${repo}**] New {type} created`;
     return message;
   }
 
