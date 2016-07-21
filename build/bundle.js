@@ -218,8 +218,7 @@ var Events = (function () {
             var commit = data.commits[0];
             var name = commit.author.name;
             var commitMessage = commit.message;
-            var sha = commit.sha.substring(0, 7);
-            var url = "https://github.com/" + repo + "/commit/" + sha;
+            var url = commit.url;
             message += "[**" + repo + ":" + branch + "**] 1 new commit by " + name;
             message += "\n" + commitMessage + " - " + name;
             message += "\n{url}";
@@ -229,8 +228,7 @@ var Events = (function () {
             var commits = data.commits;
             for (var _i = 0, commits_1 = commits; _i < commits_1.length; _i++) {
                 var commit = commits_1[_i];
-                var sha = commit.sha.substring(0, 7);
-                var url = "https://github.com/" + repo + "/commit/" + sha;
+                var url = commit.url;
                 message += "\n" + commit.message + " - " + commit.author.name;
                 message += "\n" + url;
             }
