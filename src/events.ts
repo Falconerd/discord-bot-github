@@ -76,6 +76,28 @@ export class Events {
 
   static push(data) {
     let message: string = "";
+    const repo = data.repository.full_name;
+    const branch = data.ref.split("/")[2];
+    if (data.size === 1) {
+      const commit = data.commits[0];
+      const name = commit.author.name;
+      const commitMessage = commit.message;
+      const sha = commit.sha.substring(0, 7);
+      const url = `https://github.com/${repo}/commit/${sha}`;
+      message += `[**${repo}:${branch}**] 1 new commit by ${name}`;
+      message += `\n${commitMessage} - ${name}`;
+      message += `\n{url}`;
+    } else {
+      const size = data.size;
+      const commits = data.commits;
+
+      for (let commit of commits) {
+        const sha = commit.sha.substring(0, 7);
+        const url = `https://github.com/${repo}/commit/${sha}`;
+        message += `\n${commit.message} - ${commit.author.name}`;
+        message += `\n${url}`;
+      }
+    }
     return message;
   }
 

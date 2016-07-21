@@ -212,6 +212,29 @@ var Events = (function () {
     };
     Events.push = function (data) {
         var message = "";
+        var repo = data.repository.full_name;
+        var branch = data.ref.split("/")[2];
+        if (data.size === 1) {
+            var commit = data.commits[0];
+            var name = commit.author.name;
+            var commitMessage = commit.message;
+            var sha = commit.sha.substring(0, 7);
+            var url = "https://github.com/" + repo + "/commit/" + sha;
+            message += "[**" + repo + ":" + branch + "**] 1 new commit by " + name;
+            message += "\n" + commitMessage + " - " + name;
+            message += "\n{url}";
+        }
+        else {
+            var size = data.size;
+            var commits = data.commits;
+            for (var _i = 0, commits_1 = commits; _i < commits_1.length; _i++) {
+                var commit = commits_1[_i];
+                var sha = commit.sha.substring(0, 7);
+                var url = "https://github.com/" + repo + "/commit/" + sha;
+                message += "\n" + commit.message + " - " + commit.author.name;
+                message += "\n" + url;
+            }
+        }
         return message;
     };
     Events.repository = function (data) {
