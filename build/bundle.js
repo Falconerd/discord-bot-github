@@ -214,7 +214,7 @@ var Events = (function () {
         var message = "";
         var repo = data.repository.full_name;
         var branch = data.ref.split("/")[2];
-        if (data.size === 1) {
+        if (data.commits.length === 1) {
             var commit = data.commits[0];
             var name = commit.author.name;
             var commitMessage = commit.message;
@@ -225,7 +225,6 @@ var Events = (function () {
             message += "\n{url}";
         }
         else {
-            var size = data.size;
             var commits = data.commits;
             for (var _i = 0, commits_1 = commits; _i < commits_1.length; _i++) {
                 var commit = commits_1[_i];

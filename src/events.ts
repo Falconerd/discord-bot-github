@@ -78,7 +78,7 @@ export class Events {
     let message: string = "";
     const repo = data.repository.full_name;
     const branch = data.ref.split("/")[2];
-    if (data.size === 1) {
+    if (data.commits.length === 1) {
       const commit = data.commits[0];
       const name = commit.author.name;
       const commitMessage = commit.message;
@@ -88,7 +88,6 @@ export class Events {
       message += `\n${commitMessage} - ${name}`;
       message += `\n{url}`;
     } else {
-      const size = data.size;
       const commits = data.commits;
 
       for (let commit of commits) {
