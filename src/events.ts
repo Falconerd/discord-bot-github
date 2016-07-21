@@ -90,6 +90,8 @@ export class Events {
     } else {
       const commits = data.commits;
 
+      message += `[**${repo}:${branch}**] ${commits.length} new commits`;
+
       for (let commit of commits) {
         const sha = commit.id.substring(0, 7);
         const url = `https://github.com/${repo}/commit/${sha}`;

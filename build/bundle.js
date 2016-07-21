@@ -226,6 +226,7 @@ var Events = (function () {
         }
         else {
             var commits = data.commits;
+            message += "[**" + repo + ":" + branch + "**] " + commits.length + " new commits";
             for (var _i = 0, commits_1 = commits; _i < commits_1.length; _i++) {
                 var commit = commits_1[_i];
                 var sha = commit.id.substring(0, 7);
