@@ -13,12 +13,17 @@ export class Events {
     let message: string = "";
     const type = data.ref_type;
     const repo = data.repository.full_name;
-    message += `[**${repo}**] New {type} created`;
+    const user = data.sender.login;
+    message += `[**${repo}**] ${user} created a ${type}: ${data.ref}`;
     return message;
   }
 
   static delete(data) {
     let message: string = "";
+    const type = data.ref_type;
+    const repo = data.repository.full_name;
+    const user = data.sender.login;
+    message += `[**${repo}**] ${user} deleted a ${type}: ${data.ref}`;
     return message;
   }
 
