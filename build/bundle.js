@@ -160,62 +160,90 @@ var Events = (function () {
         return message;
     };
     Events.create = function (data) {
-        var message = "";
         var type = data.ref_type;
         var repo = data.repository.full_name;
-        message += "[**" + repo + "**] New {type} created";
-        return message;
+        var user = data.sender.login;
+        return "[**" + repo + "**] " + user + " created a " + type + ": " + data.ref;
     };
     Events.delete = function (data) {
-        var message = "";
-        return message;
+        var type = data.ref_type;
+        var repo = data.repository.full_name;
+        var user = data.sender.login;
+        return "[**" + repo + "**] " + user + " deleted a " + type + ": " + data.ref;
     };
     Events.deployment = function (data) {
-        var message = "";
-        return message;
+        return null;
     };
     Events.deployment_status = function (data) {
-        var message = "";
-        return message;
+        return null;
     };
     Events.fork = function (data) {
-        var message = "";
-        return message;
+        var repo = data.repository.full_name;
+        var fork = data.forkee.full_name;
+        return "[**" + repo + "**] -> *" + fork + "*\nFork created.";
     };
     Events.gollum = function (data) {
-        var message = "";
+        var repo = data.repository.full_name;
+        var user = data.sender.login;
+        var pages = JSON.stringify(data.pages, null, 2);
+        var message = "[**" + repo + "**] Wiki was updated by " + user + ".";
+        message += "```" + pages + "```";
         return message;
     };
     Events.issue_comment = function (data) {
-        var message = "";
+        var repo = data.repoitory.full_name;
+        var user = data.comment.user.login;
+        var url = data.comment.html_url;
+        var body = data.comment.body;
+        var title = data.issue.title;
+        var message = "[**" + repo + "**] Comment created on issue: " + title;
+        message += "\n" + url;
+        message += "\n" + body;
         return message;
     };
     Events.issues = function (data) {
-        var message = "";
-        return message;
+        var repo = data.repository.full_name;
+        var action = data.action;
+        var user = data.issue.user.login;
+        var url = data.issue.html_url;
+        return "[**" + repo + "**] Issue " + action + " by " + user + "\n" + url;
     };
     Events.member = function (data) {
-        var message = "";
-        return message;
+        var repo = data.repository.full_name;
+        var user = data.member.login;
+        var url = data.member.html_url;
+        return "[**" + repo + "**] New collaborator added: " + user + "\n" + url;
     };
     Events.membership = function (data) {
-        var message = "";
-        return message;
+        return null;
     };
     Events.page_build = function (data) {
-        var message = "";
-        return message;
+        return null;
     };
     Events.public = function (data) {
-        var message = "";
-        return message;
+        var repo = data.repository.full_name;
+        return "[**" + repo + "**] Has been made open source!";
     };
     Events.pull_request_review_comment = function (data) {
-        var message = "";
+        var repo = data.repository.full_name;
+        var action = data.action;
+        var user = data.comment.user.login;
+        var body = data.comment.body;
+        var url = data.comment.html_url;
+        var message = "[**" + repo + "**] Pull Request comment " + action + " by " + user + ":";
+        message += "\n" + body;
+        message += "\n" + url;
         return message;
     };
     Events.pull_request = function (data) {
-        var message = "";
+        var repo = data.repository.full_name;
+        var action = data.action;
+        var user = data.pull_request.user.login;
+        var body = data.pull_request.body;
+        var url = data.pull_request.html_url;
+        var message = "[**" + repo + "**] Pull Request " + action + " by " + user + ":";
+        message += "\n" + body;
+        message += "\n" + url;
         return message;
     };
     Events.push = function (data) {
@@ -246,24 +274,24 @@ var Events = (function () {
         return message;
     };
     Events.repository = function (data) {
-        var message = "";
-        return message;
+        return null;
     };
     Events.release = function (data) {
-        var message = "";
-        return message;
+        var repo = data.repository.full_name;
+        var user = data.release.author.login;
+        var url = data.release.html_url;
+        return "[**" + repo + "**] Release published by " + user + ":\n" + url;
     };
     Events.status = function (data) {
-        var message = "";
-        return message;
+        return null;
     };
     Events.team_add = function (data) {
-        var message = "";
-        return message;
+        return null;
     };
     Events.watch = function (data) {
-        var message = "";
-        return message;
+        var repo = data.repository.full_name;
+        var user = data.sender.login;
+        return "[**" + repo + "**] Starred by " + user;
     };
     return Events;
 }());
