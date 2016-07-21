@@ -6,7 +6,7 @@ var express = _interopDefault(require('express'));
 var bodyParser = _interopDefault(require('body-parser'));
 var mongodb = _interopDefault(require('mongodb'));
 var discord_js = require('discord.js');
-var promise = require('promise');
+var promise = _interopDefault(require('promise'));
 
 var CommandChecker = (function () {
     function CommandChecker() {
@@ -51,7 +51,7 @@ var Actions = (function () {
     function Actions() {
     }
     Actions.add = function (repo, channelId) {
-        return new promise.Promise(function (resolve, reject) {
+        return new promise(function (resolve, reject) {
             MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);
@@ -75,7 +75,7 @@ var Actions = (function () {
         });
     };
     Actions.remove = function (repo, channelId) {
-        return new promise.Promise(function (resolve, reject) {
+        return new promise(function (resolve, reject) {
             MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);
@@ -100,7 +100,7 @@ var Actions = (function () {
         }
     };
     Actions.addToken = function (token, userId) {
-        return new promise.Promise(function (resolve, reject) {
+        return new promise(function (resolve, reject) {
             MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);
@@ -124,7 +124,7 @@ var Actions = (function () {
         });
     };
     Actions.removeToken = function (token, userId) {
-        return new promise.Promise(function (resolve, reject) {
+        return new promise(function (resolve, reject) {
             MongoClient$1.connect(config.db, function (err, db) {
                 if (err)
                     reject(err);

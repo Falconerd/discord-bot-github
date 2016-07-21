@@ -1,5 +1,5 @@
 import mongodb from "mongodb";
-import {Promise} from "promise";
+import promise from "promise";
 import {Client} from "discord.js";
 import {config} from "./config";
 
@@ -8,7 +8,7 @@ const ObjectId = mongodb.ObjectID;
 
 export class Actions {
   static add(repo: string, channelId: string): any {
-    return new Promise<any>(function(resolve, reject) {
+    return new promise<any>(function(resolve, reject) {
       MongoClient.connect(config.db, function(err, db) {
         if (err) reject(err);
         db.collection("subscriptions").deleteMany({
@@ -30,7 +30,7 @@ export class Actions {
   }
 
   static remove(repo: string, channelId: string): any {
-    return new Promise<any>(function(resolve, reject) {
+    return new promise<any>(function(resolve, reject) {
       MongoClient.connect(config.db, function(err, db) {
         if (err) reject(err);
         db.collection("subscriptions").deleteOne({
@@ -54,7 +54,7 @@ export class Actions {
   }
 
   static addToken(token: string, userId: string): any {
-    return new Promise<any>(function(resolve, reject) {
+    return new promise<any>(function(resolve, reject) {
       MongoClient.connect(config.db, function(err, db) {
         if (err) reject(err);
         db.collection("tokens").deleteMany({
@@ -76,7 +76,7 @@ export class Actions {
   }
 
   static removeToken(token: string, userId: string): any {
-    return new Promise<any>(function(resolve, reject) {
+    return new promise<any>(function(resolve, reject) {
       MongoClient.connect(config.db, function(err, db) {
         if (err) reject(err);
         db.collection("tokens").deleteOne({
