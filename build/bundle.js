@@ -152,6 +152,11 @@ var Events = (function () {
     }
     Events.commit_comment = function (data) {
         var message = "";
+        var repo = data.repository.full_name;
+        var commit = data.comment.commit_id.substring(0, 7);
+        var user = data.comment.user.login;
+        message += "[**" + repo + " _" + commit + "_**] New comment on commit by " + user;
+        message += "\n" + data.comment.body;
         return message;
     };
     Events.create = function (data) {

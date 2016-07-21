@@ -1,6 +1,11 @@
 export class Events {
   static commit_comment(data) {
     let message: string = "";
+    const repo = data.repository.full_name;
+    const commit = data.comment.commit_id.substring(0, 7);
+    const user = data.comment.user.login;
+    message += `[**${repo} _${commit}_**] New comment on commit by ${user}`;
+    message += `\n${data.comment.body}`;
     return message;
   }
 
