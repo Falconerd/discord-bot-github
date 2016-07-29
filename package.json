@@ -31,11 +31,7 @@
     "promise": "^7.1.1"
   },
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-typescript": "^2.13.6",
     "rollup": "^0.34.1",
-    "rollup-plugin-typescript": "^0.7.7",
-    "tap": "^5.8.0",
-    "tap-spec": "^4.1.1"
+    "rollup-plugin-typescript": "^0.7.7"
   }
 }

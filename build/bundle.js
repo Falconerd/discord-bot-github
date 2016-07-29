@@ -321,7 +321,6 @@ bot.on("message", function (message) {
     }
 });
 var app = express();
-console.log("Do we get here?");
 app.use(bodyParser.json());
 app.post("/", function (req, res) {
     console.log(req);
