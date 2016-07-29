@@ -31,11 +31,6 @@ bot.on("message", function (message) {
         }
     }
 });
-bot.loginWithToken(config_1.config.token, null, null, function (error) {
-    if (error)
-        return console.log(error);
-    console.log("Logged in!");
-});
 var events = {};
 events.commit_comment = function (data) { };
 var app = express_1.default();
@@ -72,4 +67,10 @@ function sendMessages(repo, message) {
         });
     });
 }
-app.listen(process.env.PORT || 8080);
+app.listen(process.env.PORT || 8080, function () {
+    bot.loginWithToken(config_1.config.token, null, null, function (error) {
+        if (error)
+            return console.log(error);
+        console.log("Logged in!");
+    });
+});
