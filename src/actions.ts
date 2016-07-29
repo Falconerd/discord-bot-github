@@ -98,7 +98,6 @@ Usage: !dbg <command> [value]
 Commands:
   add <repo> ....... adds a subscription for the current channel
   remove <repo> .... removes a subscription for the current channel
-  token [token] .... adds a GitHub personal access token. If no value is given, tokens linked to this user will be removed.
   help ............. displays this text\`\`\``;
     client.sendMessage(channelId, helpMessage);
   }

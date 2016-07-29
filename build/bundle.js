@@ -141,7 +141,7 @@ var Actions = (function () {
         });
     };
     Actions.help = function (client, channelId) {
-        var helpMessage = "```\nUsage: !dbg <command> [value]\n\nCommands:\n  add <repo> ....... adds a subscription for the current channel\n  remove <repo> .... removes a subscription for the current channel\n  token [token] .... adds a GitHub personal access token. If no value is given, tokens linked to this user will be removed.\n  help ............. displays this text```";
+        var helpMessage = "```\nUsage: !dbg <command> [value]\n\nCommands:\n  add <repo> ....... adds a subscription for the current channel\n  remove <repo> .... removes a subscription for the current channel\n  help ............. displays this text```";
         client.sendMessage(channelId, helpMessage);
     };
     return Actions;
