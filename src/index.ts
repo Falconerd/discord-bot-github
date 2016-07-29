@@ -35,6 +35,11 @@ bot.on("message", function(message: Message) {
   }
 });
 
+bot.loginWithToken(config.token, null, null, function(error) {
+  if (error) return console.log(error);
+  console.log("Logged in!");
+});
+
 const events: any = {};
 
 events.commit_comment = function(data) {}
@@ -45,6 +50,7 @@ console.log("Do we get here?");
 
 app.use(bodyParser.json());
 app.post("/", function(req, res) {
+  console.log(req);
   const event = req.get("X-GitHub-Event");
   const message = Events[event](req.body);
   const repo = req.body.repository.full_name.toLowerCase();
@@ -75,8 +81,3 @@ function sendMessages(repo: string, message: string) {
 }
 
 app.listen(process.env.PORT || 8080);
-
-bot.loginWithToken(config.token, null, null, function(error) {
-  if (error) return console.log(error);
-  console.log("Logged in!");
-});

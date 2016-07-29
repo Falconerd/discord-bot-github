@@ -31,12 +31,18 @@ bot.on("message", function (message) {
         }
     }
 });
+bot.loginWithToken(config_1.config.token, null, null, function (error) {
+    if (error)
+        return console.log(error);
+    console.log("Logged in!");
+});
 var events = {};
 events.commit_comment = function (data) { };
 var app = express_1.default();
 console.log("Do we get here?");
 app.use(body_parser_1.default.json());
 app.post("/", function (req, res) {
+    console.log(req);
     var event = req.get("X-GitHub-Event");
     var message = events_1.Events[event](req.body);
     var repo = req.body.repository.full_name.toLowerCase();
@@ -67,8 +73,3 @@ function sendMessages(repo, message) {
     });
 }
 app.listen(process.env.PORT || 8080);
-bot.loginWithToken(config_1.config.token, null, null, function (error) {
-    if (error)
-        return console.log(error);
-    console.log("Logged in!");
-});
