@@ -56,7 +56,7 @@ var Actions = (function () {
                 if (err)
                     reject(err);
                 db.collection("subscriptions").deleteMany({
-                    "repo": repo,
+                    "repo": repo.toLowerCase(),
                     "channelId": channelId
                 }, function (err, result) {
                     if (err)
@@ -320,14 +320,11 @@ bot.on("message", function (message) {
         }
     }
 });
-bot.loginWithToken(config.token, null, null, function (error) {
-    if (error)
-        return console.log(error);
-    console.log("Logged in!");
-});
 var app = express();
+console.log("Do we get here?");
 app.use(bodyParser.json());
 app.post("/", function (req, res) {
+    console.log(req);
     var event = req.get("X-GitHub-Event");
     var message = Events[event](req.body);
     var repo = req.body.repository.full_name.toLowerCase();
@@ -357,4 +354,10 @@ function sendMessages(repo, message) {
         });
     });
 }
-app.listen(process.env.PORT || 8080);
+app.listen(process.env.PORT || 8080, function () {
+    bot.loginWithToken(config.token, null, null, function (error) {
+        if (error)
+            return console.log(error);
+        console.log("Logged in!");
+    });
+});
