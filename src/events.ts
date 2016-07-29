@@ -122,7 +122,7 @@ export class Events {
       const url = `https://github.com/${repo}/commit/${sha}`;
       message += `[**${repo}:${branch}**] 1 new commit by ${name}`;
       message += `\n${commitMessage} - ${name}`;
-      message += `\n{url}`;
+      message += `\n${url}`;
     } else {
       const commits = data.commits;
 
