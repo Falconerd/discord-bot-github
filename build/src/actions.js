@@ -1,25 +1,25 @@
 "use strict";
-var mongodb = require("mongodb");
-var Promise = require("promise");
+var mongodb_1 = require("mongodb");
+var promise_1 = require("promise");
 var config_1 = require("./config");
-var MongoClient = mongodb.MongoClient;
-var ObjectId = mongodb.ObjectID;
+var MongoClient = mongodb_1.default.MongoClient;
+var ObjectId = mongodb_1.default.ObjectID;
 var Actions = (function () {
     function Actions() {
     }
     Actions.add = function (repo, channelId) {
-        return new Promise(function (resolve, reject) {
+        return new promise_1.default(function (resolve, reject) {
             MongoClient.connect(config_1.config.db, function (err, db) {
                 if (err)
                     reject(err);
                 db.collection("subscriptions").deleteMany({
-                    "repo": repo,
+                    "repo": repo.toLowerCase(),
                     "channelId": channelId
                 }, function (err, result) {
                     if (err)
                         reject(err);
                     db.collection("subscriptions").insertOne({
-                        "repo": repo,
+                        "repo": repo.toLowerCase(),
                         "channelId": channelId
                     }, function (err, result) {
                         if (err)
@@ -32,12 +32,12 @@ var Actions = (function () {
         });
     };
     Actions.remove = function (repo, channelId) {
-        return new Promise(function (resolve, reject) {
+        return new promise_1.default(function (resolve, reject) {
             MongoClient.connect(config_1.config.db, function (err, db) {
                 if (err)
                     reject(err);
                 db.collection("subscriptions").deleteOne({
-                    "repo": repo,
+                    "repo": repo.toLowerCase(),
                     "channelId": channelId
                 }, function (err, result) {
                     if (err)
@@ -57,7 +57,7 @@ var Actions = (function () {
         }
     };
     Actions.addToken = function (token, userId) {
-        return new Promise(function (resolve, reject) {
+        return new promise_1.default(function (resolve, reject) {
             MongoClient.connect(config_1.config.db, function (err, db) {
                 if (err)
                     reject(err);
@@ -81,7 +81,7 @@ var Actions = (function () {
         });
     };
     Actions.removeToken = function (token, userId) {
-        return new Promise(function (resolve, reject) {
+        return new promise_1.default(function (resolve, reject) {
             MongoClient.connect(config_1.config.db, function (err, db) {
                 if (err)
                     reject(err);
