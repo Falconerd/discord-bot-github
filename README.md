@@ -14,7 +14,7 @@ _This new version is an authorized Discord bot._
   - Click _Webhooks & services_ on the left.
   - Click the _Add Webhook_ button.
   - Add the above URL to the payload URL box.
-2. Authorize the bot on your server by clicking [this link](https://discordapp.com/oauth2/authorize?client_id=19000403632128013&scope=bot).
+2. Authorize the bot on your server by clicking [this link](https://discordapp.com/oauth2/authorize?&client_id=193000403632128013&scope=bot&permissions=3072).
 3. Once the bot is added to your server, you can interact with it using the commands listed below.
 
 ## Usage
