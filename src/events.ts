@@ -150,7 +150,13 @@ export class Events {
   }
 
   static status(data) {
-    return null;
+    const repo = data.repository.full_name;
+    const description = data.description;
+    const state = data.state;
+    const url = data.target_url;
+    const branch = data.branches.length > 0 ? data.branches[0].name : null;
+    const commitMsg = data.commit.message;
+    return `[**${repo}**] ${description}\n${branch}: ${commitMsg}\nState: ${state} ${url}`;
   }
 
   static team_add(data) {
