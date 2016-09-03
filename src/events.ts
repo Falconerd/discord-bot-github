@@ -47,7 +47,7 @@ export class Events {
   }
 
   static issue_comment(data) {
-    const repo = data.repoitory.full_name;
+    const repo = data.repository.full_name;
     const user = data.comment.user.login;
     const url = data.comment.html_url;
     const body = data.comment.body;
