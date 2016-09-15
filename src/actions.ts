@@ -1,6 +1,6 @@
 import mongodb from "mongodb";
 import promise from "promise";
-import {Client} from "discord.js";
+import {Client, Message} from "discord.js";
 import {config} from "./config";
 
 const MongoClient = mongodb.MongoClient;
@@ -91,7 +91,7 @@ export class Actions {
     });
   }
 
-  static help(client: Client, channelId: string) {
+  static help(message: Message) {
     const helpMessage: string = `\`\`\`
 Usage: !dbg <command> [value]
 
@@ -99,6 +99,6 @@ Commands:
   add <repo> ....... adds a subscription for the current channel
   remove <repo> .... removes a subscription for the current channel
   help ............. displays this text\`\`\``;
-    client.sendMessage(channelId, helpMessage);
+    message.reply(helpMessage);
   }
 }

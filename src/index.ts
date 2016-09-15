@@ -22,14 +22,14 @@ bot.on("message", function(message: Message) {
     const id = (command.command === "token") ? message.author.id : message.channel.id;
 
     if (command.command === "help") {
-      Actions.help(bot, message.channel.id);
+      Actions.help(message);
     } else {
       Actions[command.command](command.argument, id)
       .then(function(result) {
-        bot.sendMessage(message.channel.id, result);
+        message.reply(result);
       })
       .catch(function(err) {
-        bot.sendMessage(message.channel.id, err);
+        message.reply(err);
       });
     }
   }
@@ -43,11 +43,9 @@ const app = express();
 
 app.use(bodyParser.json());
 app.post("/", function(req, res) {
-  console.log(req);
   const event = req.get("X-GitHub-Event");
   const message = Events[event](req.body);
   const repo = req.body.repository.full_name.toLowerCase();
-  console.log("repo: ", repo);
   sendMessages(repo, message);
   res.send(200);
 });
@@ -60,9 +58,9 @@ function sendMessages(repo: string, message: string) {
         "repo": repo
       })
       .toArray(function(err, subscriptions) {
-          console.log(subscriptions);
           for (let subscription of subscriptions) {
             if (subscription.repo === repo.toLowerCase()) {
+              console.log(Client.channels);
               console.log("Sending:", repo, message);
               bot.sendMessage(subscription.channelId, message);
             }
