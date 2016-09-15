@@ -191,7 +191,7 @@ var Events = (function () {
         return message;
     };
     Events.issue_comment = function (data) {
-        var repo = data.repoitory.full_name;
+        var repo = data.repository.full_name;
         var user = data.comment.user.login;
         var url = data.comment.html_url;
         var body = data.comment.body;
@@ -283,7 +283,13 @@ var Events = (function () {
         return "[**" + repo + "**] Release published by " + user + ":\n" + url;
     };
     Events.status = function (data) {
-        return null;
+        var repo = data.repository.full_name;
+        var description = data.description;
+        var state = data.state;
+        var url = data.target_url;
+        var branch = data.branches.length > 0 ? data.branches[0].name : null;
+        var commitMsg = data.commit.message;
+        return "[**" + repo + "**] " + description + "\n" + branch + ": " + commitMsg + "\nState: " + state + " " + url;
     };
     Events.team_add = function (data) {
         return null;
@@ -354,9 +360,7 @@ function sendMessages(repo, message) {
     });
 }
 app.listen(process.env.PORT || 8080, function () {
-    bot.loginWithToken(config.token, null, null, function (error) {
-        if (error)
-            return console.log(error);
-        console.log("Logged in!");
-    });
+    bot.login(config.token)
+        .then(function (result) { return console.log("Logged in", result); })
+        .catch(function (error) { return console.log(error); });
 });
