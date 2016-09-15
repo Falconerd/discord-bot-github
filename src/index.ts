@@ -74,8 +74,7 @@ function sendMessages(repo: string, message: string) {
 }
 
 app.listen(process.env.PORT || 8080, function() {
-  bot.loginWithToken(config.token, null, null, function(error) {
-    if (error) return console.log(error);
-    console.log("Logged in!");
-  });
+  bot.login(config.token)
+  .then(result => console.log("Logged in", result))
+  .catch(error => console.log(error));
 });
