@@ -63,8 +63,8 @@ function sendMessages(repo: string, message: string) {
       .toArray(function(err, subscriptions) {
           for (let subscription of subscriptions) {
             if (subscription.repo === repo.toLowerCase()) {
-              console.log(JSON.stringify(bot));
               console.log("Sending:", repo, message);
+	      bot.channels[subscription.channelId].sendMessage(message);
               // bot.sendMessage(subscription.channelId, message);
             }
           }

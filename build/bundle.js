@@ -321,7 +321,7 @@ bot.on("message", function (message) {
                 message.reply(result);
             })
                 .catch(function (err) {
-                message.reply(err);
+                console.error(err);
             });
         }
     }
@@ -335,6 +335,9 @@ app.post("/", function (req, res) {
     sendMessages(repo, message);
     res.send(200);
 });
+app.get("/", function (req, res) {
+    res.send("This address is not meant to be accessed by a web browser. Please read the readme on GitHub.");
+});
 function sendMessages(repo, message) {
     return new Promise(function (resolve, reject) {
         MongoClient.connect(config.db, function (err, db) {
@@ -347,8 +350,8 @@ function sendMessages(repo, message) {
                 for (var _i = 0, subscriptions_1 = subscriptions; _i < subscriptions_1.length; _i++) {
                     var subscription = subscriptions_1[_i];
                     if (subscription.repo === repo.toLowerCase()) {
-                        console.log(JSON.stringify(discord_js.Client));
                         console.log("Sending:", repo, message);
+                        bot.channels[subscription.channelId].sendMessage(message);
                     }
                 }
                 db.close();
