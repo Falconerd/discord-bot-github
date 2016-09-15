@@ -347,9 +347,8 @@ function sendMessages(repo, message) {
                 for (var _i = 0, subscriptions_1 = subscriptions; _i < subscriptions_1.length; _i++) {
                     var subscription = subscriptions_1[_i];
                     if (subscription.repo === repo.toLowerCase()) {
-                        console.log(discord_js.Client.channels);
+                        console.log(JSON.stringify(discord_js.Client));
                         console.log("Sending:", repo, message);
-                        bot.sendMessage(subscription.channelId, message);
                     }
                 }
                 db.close();

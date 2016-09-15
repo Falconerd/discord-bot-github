@@ -29,7 +29,7 @@ bot.on("message", function(message: Message) {
         message.reply(result);
       })
       .catch(function(err) {
-        message.reply(err);
+        console.error(err);
       });
     }
   }
@@ -49,6 +49,9 @@ app.post("/", function(req, res) {
   sendMessages(repo, message);
   res.send(200);
 });
+app.get("/", function(req, res) {
+  res.send("This address is not meant to be accessed by a web browser. Please read the readme on GitHub.");
+});
 
 function sendMessages(repo: string, message: string) {
   return new Promise(function(resolve, reject) {
@@ -60,9 +63,9 @@ function sendMessages(repo: string, message: string) {
       .toArray(function(err, subscriptions) {
           for (let subscription of subscriptions) {
             if (subscription.repo === repo.toLowerCase()) {
-              console.log(Client.channels);
+              console.log(JSON.stringify(Client));
               console.log("Sending:", repo, message);
-              bot.sendMessage(subscription.channelId, message);
+              // bot.sendMessage(subscription.channelId, message);
             }
           }
           db.close();
