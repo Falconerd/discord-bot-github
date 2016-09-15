@@ -140,9 +140,9 @@ var Actions = (function () {
             });
         });
     };
-    Actions.help = function (client, channelId) {
+    Actions.help = function (message) {
         var helpMessage = "```\nUsage: !dbg <command> [value]\n\nCommands:\n  add <repo> ....... adds a subscription for the current channel\n  remove <repo> .... removes a subscription for the current channel\n  help ............. displays this text```";
-        client.sendMessage(channelId, helpMessage);
+        message.reply(helpMessage);
     };
     return Actions;
 }());
@@ -313,15 +313,15 @@ bot.on("message", function (message) {
     if (command) {
         var id = (command.command === "token") ? message.author.id : message.channel.id;
         if (command.command === "help") {
-            Actions.help(bot, message.channel.id);
+            Actions.help(message);
         }
         else {
             Actions[command.command](command.argument, id)
                 .then(function (result) {
-                bot.sendMessage(message.channel.id, result);
+                message.reply(result);
             })
                 .catch(function (err) {
-                bot.sendMessage(message.channel.id, err);
+                message.reply(err);
             });
         }
     }
@@ -329,11 +329,9 @@ bot.on("message", function (message) {
 var app = express();
 app.use(bodyParser.json());
 app.post("/", function (req, res) {
-    console.log(req);
     var event = req.get("X-GitHub-Event");
     var message = Events[event](req.body);
     var repo = req.body.repository.full_name.toLowerCase();
-    console.log("repo: ", repo);
     sendMessages(repo, message);
     res.send(200);
 });
@@ -346,10 +344,10 @@ function sendMessages(repo, message) {
                 "repo": repo
             })
                 .toArray(function (err, subscriptions) {
-                console.log(subscriptions);
                 for (var _i = 0, subscriptions_1 = subscriptions; _i < subscriptions_1.length; _i++) {
                     var subscription = subscriptions_1[_i];
                     if (subscription.repo === repo.toLowerCase()) {
+                        console.log(discord_js.Client.channels);
                         console.log("Sending:", repo, message);
                         bot.sendMessage(subscription.channelId, message);
                     }
