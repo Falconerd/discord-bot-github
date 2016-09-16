@@ -168,5 +168,9 @@ export class Events {
     const user = data.sender.login;
     return `[**${repo}**] Starred by ${user}`;
   }
+  
+  static ping(data) {
+    return null;
+  }
 
 }
