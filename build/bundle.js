@@ -299,6 +299,9 @@ var Events = (function () {
         var user = data.sender.login;
         return "[**" + repo + "**] Starred by " + user;
     };
+    Events.ping = function (data) {
+        return null;
+    };
     return Events;
 }());
 
