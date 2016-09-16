@@ -40,9 +40,9 @@ export class Events {
   static gollum(data) {
     const repo = data.repository.full_name;
     const user = data.sender.login;
-    const pages = JSON.stringify(data.pages, null, 2);
+    const pages = data.pages;
     let message = `[**${repo}**] Wiki was updated by ${user}.`;
-    message += `\`\`\`${pages}\`\`\``;
+    pages.forEach(page => message += `\n**${page.title}:** ${page.action}`);
     return message;
   }
 

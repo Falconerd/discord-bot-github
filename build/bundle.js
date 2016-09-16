@@ -185,9 +185,9 @@ var Events = (function () {
     Events.gollum = function (data) {
         var repo = data.repository.full_name;
         var user = data.sender.login;
-        var pages = JSON.stringify(data.pages, null, 2);
+        var pages = data.pages;
         var message = "[**" + repo + "**] Wiki was updated by " + user + ".";
-        message += "```" + pages + "```";
+        pages.forEach(function (page) { return message += "\n**" + page.title + ":** " + page.action; });
         return message;
     };
     Events.issue_comment = function (data) {
