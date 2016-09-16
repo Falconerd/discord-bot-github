@@ -356,7 +356,10 @@ function sendMessages(repo, message) {
                     var subscription = subscriptions_1[_i];
                     if (subscription.repo === repo.toLowerCase()) {
                         console.log("Sending:", repo, message);
-                        bot.channels.find('id', subscription.channelId).sendMessage(message);
+                        // So what happens if we don't find a channel? Hmm...
+                        var channel = bot.channels.find('id', subscription.channelId);
+                        if (channel)
+                            channel.sendMessage(message);
                     }
                 }
                 db.close();
