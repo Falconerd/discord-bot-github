@@ -335,6 +335,10 @@ app.post("/", function (req, res) {
     var event = req.get("X-GitHub-Event");
     if (event === "ping")
         return res.sendStatus(200); // Bandaid
+    if (!Events[event]) {
+        console.log("Event doesn't exist!", event);
+        return res.sendStatus(200); // Event doesn't exist? Log it!
+    }
     var message = Events[event](req.body);
     var repo = req.body.repository.full_name.toLowerCase();
     sendMessages(repo, message);

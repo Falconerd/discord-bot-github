@@ -45,6 +45,10 @@ app.use(bodyParser.json());
 app.post("/", function(req, res) {
   const event = req.get("X-GitHub-Event");
   if (event === "ping") return res.sendStatus(200); // Bandaid
+  if (!Events[event]) {
+    console.log("Event doesn't exist!", event);
+    return res.sendStatus(200); // Event doesn't exist? Log it!
+  }
   const message = Events[event](req.body);
   const repo = req.body.repository.full_name.toLowerCase();
   sendMessages(repo, message);
