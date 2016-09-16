@@ -333,6 +333,8 @@ var app = express();
 app.use(bodyParser.json());
 app.post("/", function (req, res) {
     var event = req.get("X-GitHub-Event");
+    if (event === "ping")
+        return res.sendStatus(200); // Bandaid
     var message = Events[event](req.body);
     var repo = req.body.repository.full_name.toLowerCase();
     sendMessages(repo, message);
