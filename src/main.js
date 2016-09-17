@@ -101,4 +101,5 @@ class Actions {
   }
 }
 
+console.log(`loggin in with ${CONFIG.token}`);
 bot.login(CONFIG.token);
