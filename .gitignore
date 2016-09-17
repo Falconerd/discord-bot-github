@@ -22,3 +22,6 @@ build/Release
 node_modules
 
 build
+build/bundle.js
+./build
+./build/bundle.js
