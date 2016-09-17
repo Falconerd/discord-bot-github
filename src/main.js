@@ -7,7 +7,6 @@ import CONFIG from './config';
 
 const app = express();
 const bot = new Discord.Client();
-const token = CONFIG.token;
 
 // event -> parseMessage -> Command -> Action
 
