@@ -9,6 +9,10 @@ const token = CONFIG.token;
 
 // event -> parseMessage -> Command -> Action
 
+app.post('/', (req, res) => {
+  console.log(req);
+});
+
 /**
  * Check to see if any message read by this bot is relevant.
  * - Do nothing if the message is from the bot itself.
@@ -62,7 +66,7 @@ class Commands {
       }
       if (res.statusCode === 404) {
         if (_private === '--private') {
-          channel.sendMessage('Repository is private. Token required.');
+          // Check if the user has a token stored.
         } else {
           channel.sendMessage('Repository not found.');
         }
