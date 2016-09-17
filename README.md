@@ -4,7 +4,25 @@
 # discord-bot-github
 > A GitHub bot for Discord
 
-_This new version is an authorized Discord bot._
+## Caution
+
+> tl;dr - Don't use this with private repos if you have a problem with other people possibly (only if they know your user/repo combination) reading your commit messages, issue titles, etc
+
+Currently, there is no method in place to prevent other users from subscribing to your private repositories. If they know of it's existence and you have authorised this bot to listen to your repo's webooks, then anyone can also subscribe to the events.
+
+Here is a sample scenario:
+
+Person A and person B start working on a project together. The project is in a private repository. This bot has been authorised to listen for the project events. At some point, person B leaves the team. Person B creates their own discord server and channel and subscribes to the repository. Since there is no further verification, person B can still see the project's events.
+
+The information is limited to what is displayed in the messages, which is generally the type of event, who triggered the event, and a link.
+
+A push event will display the commit message, which could be a potential security problem for a project.
+
+As of now (2016-18-09) I am unsure of how to go about solving this issue. One possibility I am looking into is using the GitHub Personal Access Tokens. However, for the bot to be able to function properly with private repositories, the tokens would need to be stored in a database which can be accessed by the bot.
+
+Personal Access Tokens have a huge flaw which is that AFAIK they cannot be set to read-only. This would mean that the bot (and by extension, myself) would have write access to any repositories which store a key with the bot. Obviously, this is not acceptable.
+
+Another potential solution is to create a GitHub Integration. I have been looking into the documentation but am not sure how this could be set up to work in an ideal way.
 
 ## Setup
 
@@ -26,7 +44,3 @@ Commands for this bot follow this structure: `!dbg <command> [argument]`.
 | `!dbg add organization/repository` | Subscribes this channel to the given repository. |
 | `!dbg remove organization/repository` | Removes this channel's subscription to the given repository. |
 | `!dbg help` | Displays usage instructions. |
-
-## Caveats
-
-There is currently no method of preventing unauthorized people from viewing your updates. I assume that is what Webhook secrets are for. I will be implementing this in a later update.
