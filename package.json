@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"No tests\"",
     "build": "rollup -c",
-    "start": "node build/bundle.js"
+    "start": "npm run build && node build/bundle.js"
   },
   "engines": {
     "node": "6.5.0"
@@ -30,7 +30,8 @@
     "body-parser": "^1.15.2",
     "discord.js": "^9.2.0",
     "express": "^4.14.0",
-    "mongodb": "^2.2.10"
+    "mongodb": "^2.2.10",
+    "request": "^2.74.0"
   },
   "devDependencies": {
     "rollup": "^0.35.11"
