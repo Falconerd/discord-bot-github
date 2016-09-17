@@ -39,7 +39,7 @@ export default class Actions {
   }
 
   static help(message) {
-    const helpMessage: string = `\`\`\`
+    const helpMessage = `\`\`\`
 Usage: !dbg <command> [value]
 
 Commands:
