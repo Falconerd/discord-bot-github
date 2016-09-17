@@ -11,7 +11,8 @@ const bot = new Discord.Client();
 // event -> parseMessage -> Command -> Action
 
 app.post('/', (req, res) => {
-  console.log(req);
+  console.log(req.get('host'));
+  console.log(req.get('referer'));
 });
 
 /**
