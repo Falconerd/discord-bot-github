@@ -2,7 +2,6 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import Discord from 'discord.js';
 import { Message } from 'discord.js';
-import request from 'request';
 import { MongoClient } from 'mongodb';
 import Commands from './commands';
 import Events from './events';

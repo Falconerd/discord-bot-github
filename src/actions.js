@@ -1,3 +1,5 @@
+import { MongoClient } from 'mongodb';
+
 export default class Actions {
   // @TODO Check if the subscription exists and return that.
   static add(repo, channelId) {

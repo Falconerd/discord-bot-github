@@ -1,3 +1,4 @@
+import request from 'request';
 import Actions from './actions';
 
 export default class Commands {
