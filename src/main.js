@@ -4,6 +4,7 @@ import Discord from 'discord.js';
 import { Message } from 'discord.js';
 import request from 'request';
 import { MongoClient } from 'mongodb';
+import Commands from './commands';
 import Events from './events';
 import config from './config';
 
@@ -56,7 +57,6 @@ function sendMessages(repo, message) {
  * - Do nothing if the message is from the bot itself.
  * - Check if the message is prefaced with '!dbg'.
  * - If the command is prefaced, check if the command exists.
- * - If the command exists, check if it has correct arguments.
  * - Then perform the action sepcified.
  */
 bot.on('message', (message) => {
@@ -64,14 +64,18 @@ bot.on('message', (message) => {
   if (message.content.substring(0, 4) !== '!dbg') return;
 
   const commandObject = parseMessage(message);
-  Commands[commandObject.command](message.channel, ...commandObject.args);
+  if (commandObject) {
+    Commands[commandObject.command](message.channel, ...commandObject.args);
+  } else {
+    message.reply('Command invalid.');
+    Commands['help'];
+  }
 });
 
 /**
  * Take in the content of a message and return a command
-* @example
  * @param  {Message} message The Discord.Message object
- * @return {}         [description]
+ * @return {Object}          An object continaing a command name and arguments
  */
 function parseMessage(message) {
   const parts = message.content.split(' ');
@@ -82,58 +86,7 @@ function parseMessage(message) {
     // @TODO We could check the command validity here
     return { command, args };
   } else {
-    console.error(`Command '${command}' does not exist.`);
     return null;
-  }
-}
-
-class Commands {
-  /**
-   * Check if the repo exists via statusCode.
-   * Check if the repo is public or private.
-   * @param {[type]} repo [description]
-   * @param {[type]} channel [description]
-   */
-  static add(channel, repo, _private) {
-    request(`https://github.com/${repo}`, (err, res) => {
-      if (res.statusCode === 200) {
-        return Actions.add(repo, channel.id)
-        .then(result => channel.sendMessage(result))
-        .catch(error => channel.sendMessage(error));
-      }
-      if (res.statusCode === 404) {
-        if (_private === '--private') {
-          // Check if the user has a token stored.
-        } else {
-          channel.sendMessage('Repository not found.');
-        }
-      }
-    });
-  }
-}
-
-class Actions {
-  // @TODO Check if the subscription exists and return that.
-  static add(repo, channelId) {
-    return new Promise((resolve, reject) => {
-      MongoClient.connect(config.db, (err, db) => {
-        if (err) reject(err);
-        db.collection('subscriptions').deleteMany({
-          'repo': repo.toLowerCase(),
-          'channelId': channelId
-        }, (err, result) => {
-          if (err) reject(err);
-          db.collection('subscriptions').insertOne({
-            repo: repo.toLowerCase(),
-            channelId: channelId
-          }, (err, result) => {
-            if (err) reject(err);
-            db.close();
-            resolve(`Added a new subscription. ${repo} <-> ${channelId}`);
-          });
-        });
-      });
-    });
   }
 }
 
