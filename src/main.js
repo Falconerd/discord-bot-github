@@ -3,7 +3,8 @@ import Discord from 'discord.js';
 import { Message } from 'discord.js';
 import request from 'request';
 import { MongoClient } from 'mongodb';
-import CONFIG from './config';
+import Events from './events';
+import config from './config';
 
 const app = express();
 const bot = new Discord.Client();
@@ -27,7 +28,7 @@ app.get('/', (req, res) => {
 });
 
 function sendMessages(repo, message) {
-  MongoClient.connect(CONFIG.db, (err, db) => {
+  MongoClient.connect(config.db, (err, db) => {
     if (err) reject(err);
     db.collection('subscriptions').find({
       'repo': repo
@@ -112,7 +113,7 @@ class Actions {
   // @TODO Check if the subscription exists and return that.
   static add(repo, channelId) {
     return new Promise((resolve, reject) => {
-      MongoClient.connect(CONFIG.db, (err, db) => {
+      MongoClient.connect(config.db, (err, db) => {
         if (err) reject(err);
         db.collection('subscriptions').deleteMany({
           'repo': repo.toLowerCase(),
@@ -134,7 +135,7 @@ class Actions {
 }
 
 app.listen(process.env.PORT || 8080, () => {
-  bot.login(CONFIG.token)
+  bot.login(config.token)
   .then(console.log('Logged in.'))
   .catch(error => console.log(error));
 });
