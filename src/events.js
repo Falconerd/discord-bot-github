@@ -101,7 +101,7 @@ export default class Events {
   static pull_request(data) {
     const repo = data.repository.full_name;
     const action = data.action;
-    const user = data.pull_request.user.login;
+    const user = data.sender.login;
     const body = data.pull_request.body;
     const url = data.pull_request.html_url;
     let message = `[**${repo}**] Pull Request ${action} by ${user}:`;
