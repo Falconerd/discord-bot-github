@@ -101,5 +101,8 @@ class Actions {
   }
 }
 
-console.log(`loggin in with ${CONFIG.token}`);
-bot.login(CONFIG.token);
+app.listen(process.env.PORT || 8080, () => {
+  bot.login(CONFIG.token)
+  .then(console.log('Logged in.'))
+  .catch(error => console.log(error));
+});
