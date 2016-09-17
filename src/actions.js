@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import config from './config';
 
 export default class Actions {
   // @TODO Check if the subscription exists and return that.
