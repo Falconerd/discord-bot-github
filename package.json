@@ -1,6 +1,6 @@
 {
   "name": "discord-bot-github",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "A Discord bot which lets you subscribe to GitHub events and reports about your subscriptions.",
   "main": "build/bundle.js",
   "scripts": {
@@ -27,13 +27,11 @@
   "homepage": "https://github.com/Falconerd/discord-bot-github#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
-    "discord.js": "^9.0.0",
+    "discord.js": "^9.2.0",
     "express": "^4.14.0",
-    "mongodb": "^2.2.0",
-    "promise": "^7.1.1"
+    "mongodb": "^2.2.10"
   },
   "devDependencies": {
-    "rollup": "^0.34.1",
-    "rollup-plugin-typescript": "^0.7.7"
+    "rollup": "^0.35.11"
   }
 }
