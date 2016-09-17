@@ -1,4 +1,5 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import Discord from 'discord.js';
 import { Message } from 'discord.js';
 import request from 'request';
@@ -8,6 +9,8 @@ import config from './config';
 
 const app = express();
 const bot = new Discord.Client();
+
+app.use(bodyParser.json());
 
 // webhook POST -> construct message -> send message
 app.post('/', (req, res) => {
