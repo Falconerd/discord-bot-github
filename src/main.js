@@ -1,9 +1,11 @@
+import express from 'express';
 import Discord from 'discord.js';
 import { Message } from 'discord.js';
 import request from 'request';
 import { MongoClient } from 'mongodb';
 import CONFIG from './config';
 
+const app = express();
 const bot = new Discord.Client();
 const token = CONFIG.token;
 
