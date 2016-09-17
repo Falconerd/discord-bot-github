@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=develop)](https://travis-ci.org/Falconerd/discord-bot-github)
 [![codecov](https://codecov.io/gh/Falconerd/discord-bot-github/branch/develop/graph/badge.svg)](https://codecov.io/gh/Falconerd/discord-bot-github)
 
-# discord-bot-github
+# discord-bot-github - 0.4.0
 > A GitHub bot for Discord
 
 ## Caution
