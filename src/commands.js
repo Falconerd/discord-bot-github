@@ -36,6 +36,6 @@ export default class Commands {
   }
 
   static help(channel) {
-    return Actions.help(channel.id);
+    return Actions.help(channel);
   }
 }
