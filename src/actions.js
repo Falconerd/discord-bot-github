@@ -41,7 +41,7 @@ export default class Actions {
     });
   }
 
-  static help(message) {
+  static help(channel) {
     const helpMessage = `\`\`\`
 Usage: !dbg <command> [value]
 
@@ -49,6 +49,6 @@ Commands:
   add <repo> ....... adds a subscription for the current channel
   remove <repo> .... removes a subscription for the current channel
   help ............. displays this text\`\`\``;
-    message.reply(helpMessage);
+    channel.sendMessage(helpMessage);
   }
 }

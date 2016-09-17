@@ -34,4 +34,8 @@ export default class Commands {
       channel.sendMessage('Something went wrong. An error has been logged.')
     });
   }
+
+  static help(channel) {
+    return Actions.help(channel.id);
+  }
 }
