@@ -8,13 +8,45 @@ import CONFIG from './config';
 const app = express();
 const bot = new Discord.Client();
 
-// event -> parseMessage -> Command -> Action
-
+// webhook POST -> construct message -> send message
 app.post('/', (req, res) => {
-  console.log(req.get('host'));
-  console.log(req.get('referer'));
+  // @TODO Verify that this request came from GitHub
+  const event = req.get("X-GitHub-Event");
+  if (event) {
+    const message = Events[event](req.body);
+    const repo = req.body.repository.full_name.toLowerCase();
+    sendMessages(repo, message);
+    res.sendStatus(200);
+  } else {
+    res.sendStaus(400);
+  }
 });
 
+app.get('/' (req, res) => {
+  res.send('This address is not meant to be accessed by a web browser. Please read the readme on GitHub');
+});
+
+function sendMessages(repo, message) {
+  MongoClient.connect(CONFIG.db, (err, db) => {
+    if (err) reject(err);
+    db.collection('subscriptions').find({
+      'repo': repo
+    })
+    .toArray((err, subscriptions) => {
+      db.close();
+      subscriptions.forEach(subscription => {
+        const channel = bot.channels.find('id', subscription.channelId);
+        if (channel) {
+          channel.sendMessage(message);
+        } else {
+          console.log('Error: Bot not allowed in channel');
+        }
+      });
+    });
+  });
+}
+
+// discord message event -> parseMessage -> Command -> Action
 /**
  * Check to see if any message read by this bot is relevant.
  * - Do nothing if the message is from the bot itself.
@@ -28,7 +60,6 @@ bot.on('message', (message) => {
   if (message.content.substring(0, 4) !== '!dbg') return;
 
   const commandObject = parseMessage(message);
-  // message.reply(JSON.stringify(commandObject, null, 2));
   Commands[commandObject.command](message.channel, ...commandObject.args);
 });
 
