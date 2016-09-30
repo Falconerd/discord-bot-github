@@ -1,6 +1,6 @@
 {
   "name": "discord-bot-github",
-  "version": "0.4.0",
+  "version": "0.4.7",
   "description": "A Discord bot which lets you subscribe to GitHub events and reports about your subscriptions.",
   "main": "build/bundle.js",
   "scripts": {
