@@ -52,7 +52,7 @@ export default class Events {
     const url = data.comment.html_url;
     const body = data.comment.body;
     const title = data.issue.title;
-    let message = `[**${repo}**] Comment created on issue: ${title}`;
+    let message = `[**${repo}**] Comment created on issue: ${title} by ${user}`;
     message += `\n${url}`;
     message += `\n${body}`;
     return message;
@@ -61,7 +61,7 @@ export default class Events {
   static issues(data) {
     const repo = data.repository.full_name;
     const action = data.action;
-    const user = data.issue.user.login;
+    const user = data.sender.login;
     const url = data.issue.html_url;
     return `[**${repo}**] Issue ${action} by ${user}\n${url}`;
   }
