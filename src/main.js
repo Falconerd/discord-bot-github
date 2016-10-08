@@ -13,24 +13,27 @@ const bot = new Discord.Client();
 app.use(bodyParser.json());
 
 // webhook POST -> construct message -> send message
-app.post('/', (req, res) => {
+app.post('/', handleRequest);
+app.post('/:guildId', handleRequest);
+
+function handleRequest(req, res) {
   // @TODO Verify that this request came from GitHub
   const event = req.get("X-GitHub-Event");
   if (event) {
     const message = Events[event](req.body);
     const repo = req.body.repository.full_name.toLowerCase();
-    sendMessages(repo, message);
+    sendMessages(repo, message, req.params.guildId);
     res.sendStatus(200);
   } else {
     res.sendStaus(400);
   }
-});
+}
 
 app.get('/', (req, res) => {
   res.send('This address is not meant to be accessed by a web browser. Please read the readme on GitHub');
 });
 
-function sendMessages(repo, message) {
+function sendMessages(repo, message, guildId) {
   MongoClient.connect(config.db, (err, db) => {
     if (err) reject(err);
     db.collection('subscriptions').find({
@@ -41,6 +44,11 @@ function sendMessages(repo, message) {
       subscriptions.forEach(subscription => {
         const channel = bot.channels.find('id', subscription.channelId);
         if (channel) {
+          if (guildId != null && channel.guild_id !== guildId) {
+            // If guild ID doesn't match, silently drop the request as it can
+            // notify 'something is happening' to malicious users
+            return;
+          }
           channel.sendMessage(message);
         } else {
           console.log('Error: Bot not allowed in channel');
