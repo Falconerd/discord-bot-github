@@ -1,7 +1,3 @@
-> Discord have implemented [their own solution for GitHub events](https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks). I will be using this from now on, I suggest you do the same.
-> The bot will continue to be online for now. If I decide to shut down the server, I will send out a notification through the bot with at least two weeks notice.
-> Thanks to everyone who helped me with this project, it was fun!
-
 [![Build Status](https://travis-ci.org/Falconerd/discord-bot-github.svg?branch=develop)](https://travis-ci.org/Falconerd/discord-bot-github)
 [![codecov](https://codecov.io/gh/Falconerd/discord-bot-github/branch/develop/graph/badge.svg)](https://codecov.io/gh/Falconerd/discord-bot-github)
 
