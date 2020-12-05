@@ -1,5 +1,7 @@
 export default {
-  entry: "src/main.js",
-  dest: "build/bundle.js",
-  format: "cjs",
+  input: "src/main.js",
+  output: {
+    file: "build/bundle.js",
+    format: "cjs",
+  },
 };
