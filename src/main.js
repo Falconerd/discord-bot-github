@@ -22,8 +22,12 @@ function handleRequest(req, res) {
   if (event) {
     const message = Events[event](req.body);
     const repo = req.body.repository.full_name.toLowerCase();
-    sendMessages(repo, message, req.params.guildId);
-    res.sendStatus(200);
+    try {
+        sendMessages(repo, message, req.params.guildId);
+        res.sendStatus(200);
+    } catch (e) {
+        console.error("ERROR SENDING MESSAGES:", e);
+    }
   } else {
     res.sendStaus(400);
   }
@@ -34,7 +38,8 @@ app.get('/', (req, res) => {
 });
 
 function sendMessages(repo, message, guildId) {
-  MongoClient.connect(config.db, (err, db) => {
+  MongoClient.connect(config.db, (err, instance) => {
+    const db = instance.db('discobot');
     if (err) reject(err);
     db.collection('subscriptions').find({
       'repo': repo
