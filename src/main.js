@@ -22,6 +22,10 @@ function handleRequest(req, res) {
   // @TODO Verify that this request came from GitHub
   const event = req.get("X-GitHub-Event");
   if (event) {
+    if (typeof Events[event] !== "function") {
+        console.error(`Event type '${event}' is not handled.`);
+        console.dir({req, res, event});
+    }
     const message = Events[event](req.body);
     const repo = req.body.repository.full_name.toLowerCase();
     try {
