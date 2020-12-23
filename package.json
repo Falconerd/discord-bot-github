@@ -5,7 +5,7 @@
   "main": "build/bundle.js",
   "scripts": {
     "test": "echo \"No tests\"",
-    "build": "./node_modules/.bin/rollup -c",
+    "build": "npm i && ./node_modules/.bin/rollup -c",
     "start": "npm run build && node build/bundle.js"
   },
   "engines": {
