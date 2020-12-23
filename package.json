@@ -32,9 +32,7 @@
     "express": "^4.14.0",
     "mongodb": "^3.1.13",
     "request": "^2.74.0",
-    "rollup": "^2.34.1"
-  },
-  "devDependencies": {
+    "rollup": "^2.34.1",
     "dotenv": "^8.2.0"
   }
 }
