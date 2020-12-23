@@ -37,7 +37,7 @@ function handleRequest(req, res) {
 
 app.get("/", (req, res) => {
   res.send(
-    "This address is not meant to be accessed by a web browser. Please read the readme on GitHub"
+    "This address is not meant to be accessed by a web browser. Please read the readme on GitHub at https://github.com/falconerd/discord-bot-github"
   );
 });
 
@@ -51,34 +51,28 @@ async function sendMessages(repo, message, guildId) {
     console.log("No documents found!");
   }
 
-  await cursor.forEach(console.dir);
-
-  /*
-  MongoClient.connect(config.db, (err, instance) => {
-    const db = instance.db("discobot");
-    if (err) reject(err);
-    db.collection("subscriptions")
-      .find({
-        repo: repo,
-      })
-      .toArray((err, subscriptions) => {
-        db.close();
-        subscriptions.forEach((subscription) => {
-          const channel = bot.channels.find("id", subscription.channelId);
-          if (channel) {
-            if (guildId != null && channel.guild_id !== guildId) {
-              // If guild ID doesn't match, silently drop the request as it can
-              // notify 'something is happening' to malicious users
-              return;
-            }
-            channel.sendMessage(message);
-          } else {
-            console.log("Error: Bot not allowed in channel");
-          }
-        });
+  await cursor.forEach((res) => {
+    const { repo, channelId } = res;
+    if (!repo || !channelId) {
+      console.error("Malformed data came back from the database", {
+        repo,
+        channelId,
       });
+      return;
+    }
+
+    const channel = bot.channels.find("id", channelId);
+    if (channel) {
+      if (guildId != null && channel.guild_id !== guildId) {
+        // If guild ID doesn't match, silently drop the request as it can
+        // notify 'something is happening' to malicious users
+        return;
+      }
+      channel.sendMessage(message);
+    } else {
+      console.log("Error: Bot not allowed in channel");
+    }
   });
-  */
 }
 
 // discord message event -> parseMessage -> Command -> Action
@@ -98,11 +92,11 @@ bot.on("message", (message) => {
     Commands[commandObject.command](
       message.channel,
       mongo_client,
-      ...commandObject.args,
+      ...commandObject.args
     );
   } else {
     message.reply("Command invalid.");
-    Commands["help"];
+    Commands["help"](message.channel);
   }
 });
 
@@ -125,12 +119,13 @@ function parseMessage(message) {
 }
 
 app.listen(process.env.PORT || 8080, async () => {
-    try {
-        const discord_res = await bot.login(config.token);
-        console.log("Logged in to Discord.");
-        const mongo_res = await mongo_client.connect();
-        console.log("Logged in to MongoDB.");
-    } catch (e) {
-        console.error(e);
-    }
+  console.log("Started on port", process.env.PORT || 8080);
+  try {
+    const discord_res = await bot.login(config.token);
+    console.log("Logged in to Discord.");
+    const mongo_res = await mongo_client.connect();
+    console.log("Logged in to MongoDB.");
+  } catch (e) {
+    console.error(e);
+  }
 });
