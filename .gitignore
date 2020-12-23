@@ -3,3 +3,5 @@
 build
 node_modules
 *.swp
+.env
+package-lock.json

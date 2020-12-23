@@ -1,20 +1,22 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import Discord from 'discord.js';
-import { Message } from 'discord.js';
-import { MongoClient } from 'mongodb';
-import Commands from './commands';
-import Events from './events';
-import config from './config';
+import express from "express";
+import bodyParser from "body-parser";
+import Discord from "discord.js";
+import { Message } from "discord.js";
+import { MongoClient } from "mongodb";
+import Commands from "./commands";
+import Events from "./events";
+import config from "./config";
 
 const app = express();
 const bot = new Discord.Client();
 
+const mongo_client = new MongoClient(config.db);
+
 app.use(bodyParser.json());
 
 // webhook POST -> construct message -> send message
-app.post('/', handleRequest);
-app.post('/:guildId', handleRequest);
+app.post("/", handleRequest);
+app.post("/:guildId", handleRequest);
 
 function handleRequest(req, res) {
   // @TODO Verify that this request came from GitHub
@@ -23,44 +25,60 @@ function handleRequest(req, res) {
     const message = Events[event](req.body);
     const repo = req.body.repository.full_name.toLowerCase();
     try {
-        sendMessages(repo, message, req.params.guildId);
-        res.sendStatus(200);
+      sendMessages(repo, message, req.params.guildId);
+      res.sendStatus(200);
     } catch (e) {
-        console.error("ERROR SENDING MESSAGES:", e);
+      console.error("ERROR SENDING MESSAGES:", e);
     }
   } else {
     res.sendStaus(400);
   }
 }
 
-app.get('/', (req, res) => {
-  res.send('This address is not meant to be accessed by a web browser. Please read the readme on GitHub');
+app.get("/", (req, res) => {
+  res.send(
+    "This address is not meant to be accessed by a web browser. Please read the readme on GitHub"
+  );
 });
 
-function sendMessages(repo, message, guildId) {
+async function sendMessages(repo, message, guildId) {
+  const db = mongo_client.db("discobot");
+  const collection = db.collection("subscriptions");
+  const query = { repo };
+  const cursor = collection.find(query);
+
+  if ((await cursor.count()) === 0) {
+    console.log("No documents found!");
+  }
+
+  await cursor.forEach(console.dir);
+
+  /*
   MongoClient.connect(config.db, (err, instance) => {
-    const db = instance.db('discobot');
+    const db = instance.db("discobot");
     if (err) reject(err);
-    db.collection('subscriptions').find({
-      'repo': repo
-    })
-    .toArray((err, subscriptions) => {
-      db.close();
-      subscriptions.forEach(subscription => {
-        const channel = bot.channels.find('id', subscription.channelId);
-        if (channel) {
-          if (guildId != null && channel.guild_id !== guildId) {
-            // If guild ID doesn't match, silently drop the request as it can
-            // notify 'something is happening' to malicious users
-            return;
+    db.collection("subscriptions")
+      .find({
+        repo: repo,
+      })
+      .toArray((err, subscriptions) => {
+        db.close();
+        subscriptions.forEach((subscription) => {
+          const channel = bot.channels.find("id", subscription.channelId);
+          if (channel) {
+            if (guildId != null && channel.guild_id !== guildId) {
+              // If guild ID doesn't match, silently drop the request as it can
+              // notify 'something is happening' to malicious users
+              return;
+            }
+            channel.sendMessage(message);
+          } else {
+            console.log("Error: Bot not allowed in channel");
           }
-          channel.sendMessage(message);
-        } else {
-          console.log('Error: Bot not allowed in channel');
-        }
+        });
       });
-    });
   });
+  */
 }
 
 // discord message event -> parseMessage -> Command -> Action
@@ -71,16 +89,20 @@ function sendMessages(repo, message, guildId) {
  * - If the command is prefaced, check if the command exists.
  * - Then perform the action sepcified.
  */
-bot.on('message', (message) => {
+bot.on("message", (message) => {
   if (message.author.id === bot.user.id) return;
-  if (message.content.substring(0, 4) !== '!dbg') return;
+  if (message.content.substring(0, 4) !== "!dbg") return;
 
   const commandObject = parseMessage(message);
   if (commandObject) {
-    Commands[commandObject.command](message.channel, ...commandObject.args);
+    Commands[commandObject.command](
+      message.channel,
+      mongo_client,
+      ...commandObject.args,
+    );
   } else {
-    message.reply('Command invalid.');
-    Commands['help'];
+    message.reply("Command invalid.");
+    Commands["help"];
   }
 });
 
@@ -90,11 +112,11 @@ bot.on('message', (message) => {
  * @return {Object}          An object continaing a command name and arguments
  */
 function parseMessage(message) {
-  const parts = message.content.split(' ');
+  const parts = message.content.split(" ");
   const command = parts[1];
   const args = parts.slice(2);
 
-  if (typeof Commands[command] === 'function') {
+  if (typeof Commands[command] === "function") {
     // @TODO We could check the command validity here
     return { command, args };
   } else {
@@ -102,8 +124,13 @@ function parseMessage(message) {
   }
 }
 
-app.listen(process.env.PORT || 8080, () => {
-  bot.login(config.token)
-  .then(console.log('Logged in.'))
-  .catch(error => console.log(error));
+app.listen(process.env.PORT || 8080, async () => {
+    try {
+        const discord_res = await bot.login(config.token);
+        console.log("Logged in to Discord.");
+        const mongo_res = await mongo_client.connect();
+        console.log("Logged in to MongoDB.");
+    } catch (e) {
+        console.error(e);
+    }
 });
