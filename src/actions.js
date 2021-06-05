@@ -13,7 +13,7 @@ export default class Actions {
     const db = mongo_client.db("discobot");
     const collection = db.collection("subscriptions");
 
-    const query = { repoName: repoName.toLowerCase() };
+    const query = { repo: repoName.toLowerCase() };
     return await collection.findOne(query);
   }
   static add(repo, channelId, mongo_client) {
