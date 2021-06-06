@@ -9,7 +9,7 @@
     "start": "npm run build && node build/bundle.js"
   },
   "engines": {
-    "node": "14.15.1"
+    "node": ">14.15.1"
   },
   "repository": {
     "type": "git",
