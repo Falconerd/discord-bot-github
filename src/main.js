@@ -71,7 +71,7 @@ async function sendMessages(repo, message, guildId) {
 
     const channel = bot.channels.find("id", channelId);
     if (channel) {
-      if (guildId != null && channel.guild_id !== guildId) {
+      if (guildId != null && channel?.guild_id !== guildId) {
         // If guild ID doesn't match, silently drop the request as it can
         // notify 'something is happening' to malicious users
         return;
