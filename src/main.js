@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 
 async function sendMessages(repo, message, guildId) {
   // Early exit to prevent crashing on startup due to race-condition
-  if (!mongo_client.isConnected) {
+  if (!mongo_client.isConnected()) {
     return;
   }
   const db = mongo_client.db("discobot");
