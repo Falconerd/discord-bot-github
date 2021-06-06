@@ -23,8 +23,8 @@ function handleRequest(req, res) {
   const event = req.get("X-GitHub-Event");
   if (event) {
     if (typeof Events[event] !== "function") {
-        console.error(`Event type '${event}' is not handled.`);
-        console.dir({req, res, event});
+      console.error(`Event type '${event}' is not handled.`);
+      console.dir({ req, res, event });
     }
     const message = Events[event](req.body);
     const repo = req.body.repository.full_name.toLowerCase();
@@ -46,6 +46,10 @@ app.get("/", (req, res) => {
 });
 
 async function sendMessages(repo, message, guildId) {
+  // Early exit to prevent crashing on startup due to race-condition
+  if (!mongo_client.isConnected) {
+    return;
+  }
   const db = mongo_client.db("discobot");
   const collection = db.collection("subscriptions");
   const query = { repo };
