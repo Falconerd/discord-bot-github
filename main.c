@@ -14,6 +14,7 @@
 
 /* TODO:
 	 * [ ] open a non-blocking thread on every incoming connection
+         * [ ] implement thread pool with thread close timeout
 	 * [X] read the request body into a string
          * [ ] extract relevant data from the string
          * [ ] print what the discord message would be
@@ -26,11 +27,19 @@
          * [ ] create a hash table to store all subscriptions
          * [ ] copy mongodb subscriptions into a file
          * [ ] create the flat file db format
-		 * falconerd/game XXXXXXX XXXXXXX XXXXXXX
-		 * where each XXXXXXX is a channelId, and each line is a hashtable entry
+		 * <org>/<repo> <channel_id> [<secret>]
+		 * if the webhook has a hash, any enties without one are invalid
+		 * this gives us private repos, too
+		 * for now the db will be 1 line per entry, no need to over-complicate it
          * [ ] read db into memory on startup
          * [ ] create query function into db
          * [ ] write all action responses
+         * [ ] discord command for adding repo
+         	 * if not private, don't check if repo exists
+         	 	 * could create db bloat via bad actors
+         	 	 * perhaps if private flag is used, a verification event is needed?
+  	 	 * make sure to check for duplicates
+  	 * [ ] discord command for removing repo
          * [ ] remove all unecessary printing or put to logs
  */
 
@@ -38,14 +47,14 @@
  * https://www.youtube.com/watch?v=Pg_4Jz8ZIH4&list=PL9IEJIKnBJjH_zM5LnovnoaKlXML5qh17
  */
 
-// static const int PORT = 8080;
+static const int PORT = 8080;
 static const int SERVER_BACKLOG = 100;
 static const size_t BUFFER_SIZE = 20000;
 
 typedef struct sockaddr_in SA_IN;
 typedef struct sockaddr SA;
 
-void handle_connection(int client_socket);
+void *handle_connection(void*);
 
 void check(int code, const char *message) {
 	if (code < 0) {
@@ -76,10 +85,10 @@ char *bin2hex(const unsigned char *input, size_t length) {
 }
 
 int main(int argc, const char **argv) {
-	if (argc == 1) {
-		exit(-1);
-	}
-	int PORT = atoi(argv[1]);
+	// if (argc == 1) {
+		// exit(-1);
+	// }
+	// int PORT = atoi(argv[1]);
 	int server_socket, client_socket;
 	SA_IN server_addr;
 
@@ -98,11 +107,17 @@ int main(int argc, const char **argv) {
 		fflush(stdout);
 
 		client_socket = accept(server_socket, (SA*)NULL, NULL);
-		handle_connection(client_socket);
+		int *pclient = malloc(sizeof(int));
+		*pclient = client_socket;
+		// handle_connection(pclient);
+		pthread_t t;
+		pthread_create(&t, NULL, handle_connection, pclient);
 	}
 }
 
-void handle_connection(int client_socket) {
+void *handle_connection(void *pclient) {
+	int client_socket = *((int*)pclient);
+	free(pclient);
 	char buffer[BUFFER_SIZE+1];
 	char recv_line[BUFFER_SIZE+1];
 	char client_name[128];
@@ -121,7 +136,7 @@ void handle_connection(int client_socket) {
 	int n = 0;
 
 	while((n = read(client_socket, recv_line, BUFFER_SIZE-1)) > 0) {
-		fprintf(stdout, "\n%s\n\n%s", bin2hex(recv_line, n), recv_line);
+		fprintf(stdout, "%s", recv_line);
 		fflush(stdout);
 
 		memcpy(&buffer[offset], recv_line, n);
@@ -149,6 +164,8 @@ void handle_connection(int client_socket) {
 	}
 
 	buffer[offset] = 0;
+
+	sleep(1);
 
 	switch (status) {
 	case 202: {
