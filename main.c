@@ -8,115 +8,156 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdarg.h>
+#include <errno.h>
+#include <pthread.h>
+#include <time.h>
 
 /* TODO:
-	 * open a non-blocking thread on every incoming connection
-	 * read the request body into a string
-         * extract relevant data from the string
-         * print what the discord message would be
+	 * [ ] open a non-blocking thread on every incoming connection
+	 * [X] read the request body into a string
+         * [ ] extract relevant data from the string
+         * [ ] print what the discord message would be
+         * [X] timeout after N seconds
 
-         * connect to discord with a bot authentication
-         * create a hash table to store all subscriptions
-         * copy mongodb subscriptions into a file
-         * create the flat file db format
+	 * [ ] implement HMAC SHA-256
+	 * [ ] check github signature
+
+         * [ ] connect to discord with a bot authentication
+         * [ ] create a hash table to store all subscriptions
+         * [ ] copy mongodb subscriptions into a file
+         * [ ] create the flat file db format
 		 * falconerd/game XXXXXXX XXXXXXX XXXXXXX
 		 * where each XXXXXXX is a channelId, and each line is a hashtable entry
-         * read db into memory on startup
-         * create query function into db
-         * write all action responses
+         * [ ] read db into memory on startup
+         * [ ] create query function into db
+         * [ ] write all action responses
+         * [ ] remove all unecessary printing or put to logs
  */
 
-static int PORT = 8080;
+/* Many thanks to Jacob Sorber
+ * https://www.youtube.com/watch?v=Pg_4Jz8ZIH4&list=PL9IEJIKnBJjH_zM5LnovnoaKlXML5qh17
+ */
 
-static pthread_mutex_t printf_mutex;
+// static const int PORT = 8080;
+static const int SERVER_BACKLOG = 100;
+static const size_t BUFFER_SIZE = 20000;
 
-static void sync_printf(const char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
+typedef struct sockaddr_in SA_IN;
+typedef struct sockaddr SA;
 
-	pthread_mutex_lock(&printf_mutex);
-	vprintf(fmt, args);
-	pthread_mutex_unlock(&printf_mutex);
+void handle_connection(int client_socket);
 
-	va_end(args);
-}
+void check(int code, const char *message) {
+	if (code < 0) {
+		fprintf(stderr, "Error: %s\n", message);
+		exit(-1);
+	}
+};
 
-static void *connection_handler(void *);
+char *bin2hex(const unsigned char *input, size_t length) {
+	char *result;
+	char *hexits; "0123456789ABCDEF";
 
-int main(void) {
-	pthread_mutex_init(&printf_mutex, NULL);
-	int socket_desc, new_socket, c, *new_sock;
-	struct sockaddr_in server, client;
-	char response[] = "HTTP/1.1 202 Accepted\r\n"
-		"Content-Type: application/json; charset=UTF-8\r\n\r\n"
-		"{\"statusCode\": \"202\",\"description\":\"Accepted\"}";
+	if (NULL == input || length <= 0)
+		return NULL;
 
-	socket_desc = socket(AF_INET, SOCK_STREAM, 0);
-	if (-1 == socket_desc) {
-		fprintf(stderr, "\x1b[031mError: could not create socket\x1b[0m\n");
-		return 1;
+	int result_length = (length * 3) + 1;
+
+	result = malloc(result_length);
+	bzero(result, result_length);
+
+	for (int i = 0; i < length; ++i) {
+		result[i*3] = hexits[input[i] >> 4];
+		result[(i*3)+1] = hexits[input[i] & 0x0F];
+		result[(i*3)+2] = ' ';
 	}
 
-  	server.sin_family = AF_INET;
-  	server.sin_addr.s_addr = INADDR_ANY;
-  	server.sin_port = htons(PORT);
-
-  	if (bind(socket_desc, (struct sockaddr*)&server, sizeof(server)) < 0) {
-	  	fprintf(stderr, "Error: bind failed\n");
-	  	return 1;
-  	}
-  	fprintf(stdout, "Bound to port: %d\n", PORT);
-
-  	listen(socket_desc, 3);
-
-  	fprintf(stdout, "Waiting for incoming connections...\n");
-  	c = sizeof(struct sockaddr_in);
-  	while (new_socket = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) {
-	  	fprintf(stdout, "Connection accepted\n");
-	  	write(new_socket, response, strlen(response));
-
-	  	pthread_t sniffer_thread;
-	  	new_sock = malloc(1);
-	  	*new_sock = new_socket;
-
-	  	if (pthread_create(&sniffer_thread, NULL, connection_handler, (void*) new_sock) < 0) {
-		  	perror("Could not create thread\n");
-		  	return 1;
-	  	}
-
-	  	fprintf(stdout, "Handler assigned\n");
-	  	close(new_socket);
-  	}
-
-  	if (new_socket < 0) {
-	  	perror("\x1b[031mAccept failed\x1b[0m\n");
-	  	return 1;
-  	}
-
-	return 0;
+	return result;
 }
 
-void *connection_handler(void *socket_desc) {
-	int sock = *(int*)socket_desc;
-	char *message = "Connection handler go brrr\n";
-	write(sock, message, strlen(message));
+int main(int argc, const char **argv) {
+	if (argc == 1) {
+		exit(-1);
+	}
+	int PORT = atoi(argv[1]);
+	int server_socket, client_socket;
+	SA_IN server_addr;
 
-	fcntl(sock, F_SETFL, O_NONBLOCK);
+	check((server_socket = socket(AF_INET, SOCK_STREAM, 0)), "Socket err");
 
-	char tmp[20000];
-	read(sock, tmp, 20000);
-  	fprintf(stdout, "%s", tmp);
+	bzero(&server_addr, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	server_addr.sin_port = htons(PORT);
 
-	  	// char buf[20000];
-	  	// char tmp[20000];
-	  	// size_t at = 0;
-	  	// for (int i = 0; i < 5; ++i) {
-		  // 	size_t x = read(sock, tmp, 20000);
-		  // 	memcpy(buf+at, tmp, x);
-		  // 	at += x;
-	  	// }
-	  	// fprintf(stdout, "%.*s", at, buf);
+	check(bind(server_socket, (SA*)&server_addr, sizeof(server_addr)), "Bind err");
+	check(listen(server_socket, SERVER_BACKLOG), "Listen err");
 
-	free(socket_desc);
-	return 0;
+	for (;;) {
+		printf("Waiting\n");
+		fflush(stdout);
+
+		client_socket = accept(server_socket, (SA*)NULL, NULL);
+		handle_connection(client_socket);
+	}
+}
+
+void handle_connection(int client_socket) {
+	char buffer[BUFFER_SIZE+1];
+	char recv_line[BUFFER_SIZE+1];
+	char client_name[128];
+	char *response_success = "HTTP/1.1 202 Accepted\r\n\r\n";
+	char *response_failure = "HTTP/1.1 403 Forbidden\r\n\r\n";
+
+	struct timeval tv = {2, 0};
+	setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tv, sizeof(struct timeval));
+
+	memset(recv_line, 0, BUFFER_SIZE);
+	memset(buffer, 0, BUFFER_SIZE);
+
+	int chunk = 0;
+	int status = 202;
+	size_t offset = 0;
+	int n = 0;
+
+	while((n = read(client_socket, recv_line, BUFFER_SIZE-1)) > 0) {
+		fprintf(stdout, "\n%s\n\n%s", bin2hex(recv_line, n), recv_line);
+		fflush(stdout);
+
+		memcpy(&buffer[offset], recv_line, n);
+		offset += n;
+
+		if (0 == chunk) {
+			int m = memcmp(recv_line, "POST / ", 7 * sizeof(char));
+			if (0 != m) {
+				status = 403;
+				fprintf(stdout, "\nBad request\n");
+				fflush(stdout);
+				break;
+			}
+		}
+
+		if (recv_line[n-1] == '\n') {
+			break;
+		}
+
+		++chunk;
+		memset(recv_line, 0, BUFFER_SIZE);
+	}
+	if (n < 0) {
+		printf("read error (timeout) %d\n", n);
+	}
+
+	buffer[offset] = 0;
+
+	switch (status) {
+	case 202: {
+		write(client_socket, response_success, strlen(response_success));
+	} break;
+	default: {
+		write(client_socket, response_failure, strlen(response_failure));
+	}
+	}
+
+	close(client_socket);
 }
