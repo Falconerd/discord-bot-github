@@ -10,11 +10,11 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <pthread.h>
-#include <time.h>
+#include <sys/time.h>
 
 /* TODO:
-	 * [ ] open a non-blocking thread on every incoming connection
-         * [ ] implement thread pool with thread close timeout
+         * [X] implement thread pool
+         * [X] test what happens when using slow DOS attack
 	 * [X] read the request body into a string
          * [ ] extract relevant data from the string
          * [ ] print what the discord message would be
@@ -47,84 +47,132 @@
  * https://www.youtube.com/watch?v=Pg_4Jz8ZIH4&list=PL9IEJIKnBJjH_zM5LnovnoaKlXML5qh17
  */
 
-static const int PORT = 8080;
-static const int SERVER_BACKLOG = 100;
-static const size_t BUFFER_SIZE = 20000;
+#define THREAD_POOL_SIZE 50
+#define PORT 8080
+#define SERVER_BACKLOG 100
+#define BUFFER_SIZE 20000
 
 typedef struct sockaddr_in SA_IN;
 typedef struct sockaddr SA;
 
-void *handle_connection(void*);
+pthread_t thread_pool[THREAD_POOL_SIZE];
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-void check(int code, const char *message) {
-	if (code < 0) {
-		fprintf(stderr, "Error: %s\n", message);
-		exit(-1);
-	}
+typedef struct queue_item Queue_Item;
+struct queue_item {
+	int *client_socket;
+	Queue_Item *next;
 };
 
-char *bin2hex(const unsigned char *input, size_t length) {
-	char *result;
-	char *hexits; "0123456789ABCDEF";
+typedef struct queue Queue;
+struct queue {
+	Queue_Item *head;
+	Queue_Item *tail;
+};
 
-	if (NULL == input || length <= 0)
-		return NULL;
+Queue queue = {0};
 
-	int result_length = (length * 3) + 1;
+// we don't really care about data locality
+// just use fragmented list
+typedef struct list_item List_Item;
+struct list_item {
+	char *buffer;
+	size_t length;
+	List_Item *next;
+};
 
-	result = malloc(result_length);
-	bzero(result, result_length);
+typedef struct list List;
+struct list {
+	List_Item *head;
+	List_Item *tail;
+};
 
-	for (int i = 0; i < length; ++i) {
-		result[i*3] = hexits[input[i] >> 4];
-		result[(i*3)+1] = hexits[input[i] & 0x0F];
-		result[(i*3)+2] = ' ';
+List_Item *append(List *list) {
+	if (list->tail == NULL) {
+		list->tail = malloc(sizeof(List_Item));
+		if (list->tail == NULL) {
+			// TODO handle out of memory
+		}
+		list->head = list->tail;
+		return list->tail;
 	}
 
-	return result;
+	List_Item *temp = malloc(sizeof(List_Item));
+	temp->next = NULL;
+	list->tail->next = temp;
+	list->tail = temp;
+	return list->tail;
 }
 
-int main(int argc, const char **argv) {
-	// if (argc == 1) {
-		// exit(-1);
-	// }
-	// int PORT = atoi(argv[1]);
-	int server_socket, client_socket;
-	SA_IN server_addr;
+List_Item *pop(List *list) {
+	if (list->head == NULL)
+		return NULL;
+	List_Item *item = list->head;
+	list->head = list->head->next; 
+	return item;
+}
 
-	check((server_socket = socket(AF_INET, SOCK_STREAM, 0)), "Socket err");
+void enqueue(int *client_socket) {
+	Queue_Item *queue_item = malloc(sizeof(Queue_Item));
+	queue_item->client_socket = client_socket;
+	queue_item->next = NULL;
+	if (queue.tail == NULL)
+		queue.head = queue_item;
+	else
+		queue.tail->next = queue_item;
+	queue.tail = queue_item;
+}
 
-	bzero(&server_addr, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	server_addr.sin_port = htons(PORT);
+int *dequeue() {
+	if (queue.head == NULL) {
+		return NULL;
+	} else {
 
-	check(bind(server_socket, (SA*)&server_addr, sizeof(server_addr)), "Bind err");
-	check(listen(server_socket, SERVER_BACKLOG), "Listen err");
+	int *result = queue.head->client_socket;
+	Queue_Item *temp = queue.head;
+	queue.head = queue.head->next;
+	if (queue.head == NULL)
+		queue.tail = NULL;
+	free(temp);
+	return result;
+	}
+}
 
-	for (;;) {
-		printf("Waiting\n");
-		fflush(stdout);
+void process_request(char *buffer, size_t length) {
+	List list = {0};
+	size_t EOL = 0;
+	size_t BOL = 0;
+	for (size_t i = 0; i < length; ++i) {
+		if (buffer[i] == '\n') {
+			EOL = i;
+			++i;
 
-		client_socket = accept(server_socket, (SA*)NULL, NULL);
-		int *pclient = malloc(sizeof(int));
-		*pclient = client_socket;
-		// handle_connection(pclient);
-		pthread_t t;
-		pthread_create(&t, NULL, handle_connection, pclient);
+			// consume new lines
+			while (buffer[i] == '\n' || buffer[i] == '\r') {
+				++i;
+			}
+
+			// do the thing
+			List_Item *line = append(&list);
+			line->buffer = &buffer[BOL];
+			line->length = EOL - BOL;
+
+			BOL = i;
+		}
 	}
 }
 
 void *handle_connection(void *pclient) {
 	int client_socket = *((int*)pclient);
 	free(pclient);
-	char buffer[BUFFER_SIZE+1];
-	char recv_line[BUFFER_SIZE+1];
-	char client_name[128];
+	char *buffer = malloc(sizeof(char) * (BUFFER_SIZE+1));
+	char *recv_line = malloc(sizeof(char) * (BUFFER_SIZE+1));
 	char *response_success = "HTTP/1.1 202 Accepted\r\n\r\n";
 	char *response_failure = "HTTP/1.1 403 Forbidden\r\n\r\n";
 
-	struct timeval tv = {2, 0};
+	struct timeval tv = {0};
+	tv.tv_sec = 1;
 	setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tv, sizeof(struct timeval));
 
 	memset(recv_line, 0, BUFFER_SIZE);
@@ -137,7 +185,6 @@ void *handle_connection(void *pclient) {
 
 	while((n = read(client_socket, recv_line, BUFFER_SIZE-1)) > 0) {
 		fprintf(stdout, "%s", recv_line);
-		fflush(stdout);
 
 		memcpy(&buffer[offset], recv_line, n);
 		offset += n;
@@ -147,7 +194,6 @@ void *handle_connection(void *pclient) {
 			if (0 != m) {
 				status = 403;
 				fprintf(stdout, "\nBad request\n");
-				fflush(stdout);
 				break;
 			}
 		}
@@ -160,12 +206,8 @@ void *handle_connection(void *pclient) {
 		memset(recv_line, 0, BUFFER_SIZE);
 	}
 	if (n < 0) {
-		printf("read error (timeout) %d\n", n);
+		printf("\nread error (timeout) %d (size: %lu)\n", n, offset);
 	}
-
-	buffer[offset] = 0;
-
-	sleep(1);
 
 	switch (status) {
 	case 202: {
@@ -176,5 +218,65 @@ void *handle_connection(void *pclient) {
 	}
 	}
 
+	process_request(buffer, offset);
+
+	free(buffer);
+	free(recv_line);
 	close(client_socket);
+	return NULL;
+}
+
+void *thread_function(void *arg) {
+	for (;;) {
+		pthread_mutex_lock(&mutex);
+		int *pclient = dequeue();
+		if (pclient == NULL) {
+			pthread_cond_wait(&condition_var, &mutex);
+			pclient = dequeue();
+		}
+		pthread_mutex_unlock(&mutex);
+		if (pclient != NULL) {
+			handle_connection(pclient);
+		}
+	}
+}
+
+void check(int code, const char *message) {
+	if (code < 0) {
+		fprintf(stderr, "Error: %s\n", message);
+		exit(-1);
+	}
+}
+
+int main(void) {
+	int server_socket, client_socket;
+	SA_IN server_addr;
+
+	for (int i = 0; i < THREAD_POOL_SIZE-1; ++i) {
+		pthread_create(&thread_pool[i], NULL, thread_function, NULL);
+	}
+
+	check((server_socket = socket(AF_INET, SOCK_STREAM, 0)), "Socket err");
+
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	server_addr.sin_port = htons(PORT);
+
+	check(bind(server_socket, (SA*)&server_addr, sizeof(server_addr)), "Bind err");
+	check(listen(server_socket, SERVER_BACKLOG), "Listen err");
+
+	for (;;) {
+		printf("Waiting\n");
+
+		client_socket = accept(server_socket, (SA*)NULL, NULL);
+		int *pclient = malloc(sizeof(int));
+		*pclient = client_socket;
+		pthread_mutex_lock(&mutex);
+		enqueue(pclient);
+		pthread_cond_signal(&condition_var);
+		pthread_mutex_unlock(&mutex);
+	}
+
+	return 0;
 }

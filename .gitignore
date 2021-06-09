@@ -22,3 +22,5 @@ build/Release
 node_modules
 
 typings
+
+a.out
