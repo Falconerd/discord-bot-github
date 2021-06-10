@@ -13,34 +13,35 @@
 #include <sys/time.h>
 
 /* TODO:
-         * [X] implement thread pool
-         * [X] test what happens when using slow DOS attack
-	 * [X] read the request body into a string
-         * [ ] extract relevant data from the string
-         * [ ] print what the discord message would be
-         * [X] timeout after N seconds
+ * [X] implement thread pool
+ * [X] test what happens when using slow DOS attack
+ * [X] read the request body into a string
+ * [ ] extract relevant data from the string
+         * does this need to be a tree?
+ * [ ] print what the discord message would be
+ * [X] timeout after N seconds
 
-	 * [ ] implement HMAC SHA-256
-	 * [ ] check github signature
+ * [ ] implement HMAC SHA-256
+ * [ ] check github signature
 
-         * [ ] connect to discord with a bot authentication
-         * [ ] create a hash table to store all subscriptions
-         * [ ] copy mongodb subscriptions into a file
-         * [ ] create the flat file db format
-		 * <org>/<repo> <channel_id> [<secret>]
-		 * if the webhook has a hash, any enties without one are invalid
-		 * this gives us private repos, too
-		 * for now the db will be 1 line per entry, no need to over-complicate it
-         * [ ] read db into memory on startup
-         * [ ] create query function into db
-         * [ ] write all action responses
-         * [ ] discord command for adding repo
-         	 * if not private, don't check if repo exists
-         	 	 * could create db bloat via bad actors
-         	 	 * perhaps if private flag is used, a verification event is needed?
-  	 	 * make sure to check for duplicates
-  	 * [ ] discord command for removing repo
-         * [ ] remove all unecessary printing or put to logs
+ * [ ] connect to discord with a bot authentication
+ * [ ] create a hash table to store all subscriptions
+ * [ ] copy mongodb subscriptions into a file
+ * [ ] create the flat file db format
+	 * <org>/<repo> <channel_id> [<secret>]
+	 * if the webhook has a hash, any enties without one are invalid
+	 * this gives us private repos, too
+	 * for now the db will be 1 line per entry, no need to over-complicate it
+ * [ ] read db into memory on startup
+ * [ ] create query function into db
+ * [ ] write all action responses
+ * [ ] discord command for adding repo
+ 	 * if not private, don't check if repo exists
+ 	 	 * could create db bloat via bad actors
+ 	 	 * perhaps if private flag is used, a verification event is needed?
+ 	 * make sure to check for duplicates
+ * [ ] discord command for removing repo
+ * [ ] remove all unecessary printing or put to logs
  */
 
 /* Many thanks to Jacob Sorber
@@ -59,17 +60,21 @@ pthread_t thread_pool[THREAD_POOL_SIZE];
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
+typedef struct string {
+	char *data;
+	size_t length;
+} String;
+
 typedef struct queue_item Queue_Item;
 struct queue_item {
 	int *client_socket;
 	Queue_Item *next;
 };
 
-typedef struct queue Queue;
-struct queue {
+typedef struct queue {
 	Queue_Item *head;
 	Queue_Item *tail;
-};
+} Queue;
 
 Queue queue = {0};
 
@@ -82,11 +87,10 @@ struct list_item {
 	List_Item *next;
 };
 
-typedef struct list List;
-struct list {
+typedef struct list {
 	List_Item *head;
 	List_Item *tail;
-};
+} List;
 
 List_Item *append(List *list) {
 	if (list->tail == NULL) {
@@ -139,12 +143,179 @@ int *dequeue() {
 	}
 }
 
+/* event types */
+// check_run
+// check_suite
+// code_scanning_alert
+// commit_comment
+// content_reference
+// create
+// delete
+// deploy_key
+// deployment
+// deployment_status
+// discussion
+// discussion_comment
+// fork
+// github_app_authorization
+// gollum
+// installation
+// installation_repositories
+// issue_comment
+// issues
+// label
+// marketplace_purchase
+// member
+// membership
+// meta
+// milestone
+// organization
+// org_block
+// package
+// page_build
+// ping
+// project_card
+// project_column
+// project
+// public
+// pull_request
+// pull_request_review
+// pull_request_review_comment
+// push
+// release
+// repository_dispatch
+// repository
+// repository_import
+// repository_vulnerability_alert
+// secret_scanning_alert
+// security_advisory
+// sponsorship
+// star
+// status
+// team
+// team_add
+// watch
+// workflow_dispatch
+// workflow_run
+
+/*
+ * turn json object into tree
+ * 
+ * input: {
+  "zen": "woah",
+  "foo": {
+    "bar": "wat",
+    "baz": 42,
+    "wow": {
+      "surpise": 17
+    }
+  },
+  "xor": "xand"
+}
+ * output:
+ * zen: woah - foo - xor: xand
+ *              | 
+ *             bar: wat - baz: 42
+ */
+
+typedef struct node Node;
+struct node {
+	Node *next;
+	Node *child;
+	String data;
+};
+
+typedef struct tree {
+	Node *root;
+} Tree;
+
+Node *tree_create(Tree *tree, Node *parent, int is_child) {
+	Node *node = malloc(sizeof(Node));
+	memset(node, 0, sizeof(Node));
+	if (parent == NULL) {
+		tree->root = node;
+		return node;
+	}
+
+	if (is_child)
+		parent->child = node;
+	else
+		parent->next = node;
+	return node;
+}
+
+// every key ends with :
+// every value ends with ,
+// some values start with {,
+// this is indicative that they have children instead of direct values
+Tree json_to_tree(String json) {
+	Tree tree = {0};
+
+	char arena[256];
+
+	int in_key = 0;
+	int in_value = 0;
+	int temp_length = 0;
+
+	Node *temp_list = malloc(sizeof(Node));
+
+	for (int i = 1; i < json.length; ++i) {
+		char *c = &json.data[i];
+		if (*c == '"') {
+			++c;
+			if (!in_key && !in_value) {
+				while (*c != '"') {
+					arena[temp_length++] = *(c++);
+				}
+				// create node?
+				Node *node = tree_create(&tree, NULL, 0);
+				printf(">>>>> %d \n%.*s\n<<<<<", temp_length, temp_length, arena);
+			}
+		}
+	}
+
+	return tree;
+}
+
+// path be like c h e c k _ r u n . o u t p u t . t i t l e
+//              0               8   10        15  17      21
+void search_payload(const char *path_string, String payload) {
+	// Path path = {0};
+	// path.depth = 1;
+
+	// // split path into keys
+	// int key = 0;
+	// int j = 0;
+	// for (int i = 0; i < strlen(path_string); ++i) {
+	// 	if (path_string[i] == '.') {
+	// 		++key;
+	// 		j = 0;
+	// 		++path.depth;
+	// 		continue;
+	// 	}
+	// 	path.keys[key][j] = path_string[i];
+	// }
+
+	// int depth = 0;
+	// for (int i = 0; i < payload.length && depth < path.depth; ++i) {
+	// 	if (payload.data[i] == '"') {
+	// 		++i;
+	// 		if (memcmp(&payload.data[i], path.keys[depth].data, path.keys[depth].length) == 0) {
+	// 			printf("\n FOUND: %.*s\n", (int)path.keys[depth].length, &payload.data[i]);
+	// 			++depth;
+	// 		}
+	// 	}
+	// }
+
+	// printf("\ndid we find %.*s?\n", (int)path.keys[0].length, path.keys[0].data);
+}
+
 void process_request(char *buffer, size_t length) {
 	List list = {0};
 	size_t EOL = 0;
 	size_t BOL = 0;
 	for (size_t i = 0; i < length; ++i) {
-		if (buffer[i] == '\n') {
+		if (buffer[i] == '\n' || i == length-1) {
 			EOL = i;
 			++i;
 
@@ -161,6 +332,43 @@ void process_request(char *buffer, size_t length) {
 			BOL = i;
 		}
 	}
+
+	String event_type;
+	String signature;
+	String payload;
+
+	List_Item *item = list.head;
+	for (;;) {
+		if (item == NULL) {
+			break;
+		}
+
+		// get event type
+		if (memcmp(item->buffer, "X-GitHub-Event: ", 16) == 0) {
+			event_type.data = &item->buffer[16];
+			event_type.length = item->length - 16;
+		}
+
+		if (memcmp(item->buffer, "X-Hub-Signature-256: sha256=", 28) == 0) {
+			signature.data = &item->buffer[28];
+			signature.length = item->length - 28;
+		}
+
+		if (memcmp(item->buffer, "{", 1) == 0) {
+			payload.data = &item->buffer[0];
+			payload.length = item->length;
+		}
+
+		item = item->next;
+	}
+
+	printf("\n%.*s\n", (int)event_type.length, event_type.data);
+	printf("\n%.*s\n", (int)signature.length, signature.data);
+	printf("\n%.*s\n", (int)payload.length, payload.data);
+
+	json_to_tree(payload);
+
+	// search_payload("hook.id", payload);
 }
 
 void *handle_connection(void *pclient) {
