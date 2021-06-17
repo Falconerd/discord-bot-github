@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -11,6 +12,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include "tiny-json.h"
 
 /* TODO:
  * [X] implement thread pool
@@ -220,94 +222,192 @@ int *dequeue() {
 
 typedef struct node Node;
 struct node {
+	String key;
+	String value;
 	Node *next;
-	Node *child;
-	String data;
+	Node *child; // if child != NULL, value is NULL
+	Node *parent;
 };
 
 typedef struct tree {
 	Node *root;
 } Tree;
 
-Node *tree_create(Tree *tree, Node *parent, int is_child) {
+Node *tree_create(Tree *tree, Node *parent, Node *prev) {
 	Node *node = malloc(sizeof(Node));
 	memset(node, 0, sizeof(Node));
 	if (parent == NULL) {
 		tree->root = node;
 		return node;
-	}
-
-	if (is_child)
-		parent->child = node;
-	else
-		parent->next = node;
-	return node;
-}
-
-// every key ends with :
-// every value ends with ,
-// some values start with {,
-// this is indicative that they have children instead of direct values
-Tree json_to_tree(String json) {
-	Tree tree = {0};
-
-	char arena[256];
-
-	int in_key = 0;
-	int in_value = 0;
-	int temp_length = 0;
-
-	Node *temp_list = malloc(sizeof(Node));
-
-	for (int i = 1; i < json.length; ++i) {
-		char *c = &json.data[i];
-		if (*c == '"') {
-			++c;
-			if (!in_key && !in_value) {
-				while (*c != '"') {
-					arena[temp_length++] = *(c++);
-				}
-				// create node?
-				Node *node = tree_create(&tree, NULL, 0);
-				printf(">>>>> %d \n%.*s\n<<<<<", temp_length, temp_length, arena);
-			}
+	} else {
+		if (parent->child == NULL) {
+			parent->child = node;
 		}
 	}
 
-	return tree;
+	if (prev != NULL) {
+		prev->next = node;
+	}
+	node->parent = parent;
+
+	return node;
 }
 
-// path be like c h e c k _ r u n . o u t p u t . t i t l e
-//              0               8   10        15  17      21
-void search_payload(const char *path_string, String payload) {
-	// Path path = {0};
-	// path.depth = 1;
+char *ping_payload = "{\"zen\":\"Design for failure.\",\"hook_id\":301812344,\"test\":[1,2,3,4],\"hook\":{\"type\":\"Repository\",\"id\":301812344,\"name\":\"web\",\"active\":true,\"events\":[\"*\"],\"config\":{\"content_type\":\"form\",\"insecure_ssl\":\"0\",\"secret\":\"********\",\"url\":\"http://58.84.181.43:8080\"},\"updated_at\":\"2021-06-10T10:10:42Z\",\"created_at\":\"2021-06-10T10:10:42Z\",\"url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks/301812344\",\"test_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks/301812344/test\",\"ping_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks/301812344/pings\",\"last_response\":{\"code\":null,\"status\":\"unused\",\"message\":null}},\"repository\":{\"id\":48586289,\"node_id\":\"MDEwOlJlcG9zaXRvcnk0ODU4NjI4OQ==\",\"name\":\"discord-bot-github\",\"full_name\":\"Falconerd/discord-bot-github\",\"private\":false,\"owner\":{\"login\":\"Falconerd\",\"id\":1349538,\"node_id\":\"MDQ6VXNlcjEzNDk1Mzg=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/1349538?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/Falconerd\",\"html_url\":\"https://github.com/Falconerd\",\"followers_url\":\"https://api.github.com/users/Falconerd/followers\",\"following_url\":\"https://api.github.com/users/Falconerd/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/Falconerd/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/Falconerd/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/Falconerd/subscriptions\",\"organizations_url\":\"https://api.github.com/users/Falconerd/orgs\",\"repos_url\":\"https://api.github.com/users/Falconerd/repos\",\"events_url\":\"https://api.github.com/users/Falconerd/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/Falconerd/received_events\",\"type\":\"User\",\"site_admin\":false},\"html_url\":\"https://github.com/Falconerd/discord-bot-github\",\"description\":\"A bot for discord which consumes the GitHub API and gives you updates.\",\"fork\":false,\"url\":\"https://api.github.com/repos/Falconerd/discord-bot-github\",\"forks_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/forks\",\"keys_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/teams\",\"hooks_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks\",\"issue_events_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/events\",\"assignees_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/tags\",\"blobs_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/languages\",\"stargazers_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/stargazers\",\"contributors_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/contributors\",\"subscribers_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/subscribers\",\"subscription_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/subscription\",\"commits_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/merges\",\"archive_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/downloads\",\"issues_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/deployments\",\"created_at\":\"2015-12-25T16:50:32Z\",\"updated_at\":\"2021-06-09T21:28:43Z\",\"pushed_at\":\"2021-06-09T13:43:01Z\",\"git_url\":\"git://github.com/Falconerd/discord-bot-github.git\",\"ssh_url\":\"git@github.com:Falconerd/discord-bot-github.git\",\"clone_url\":\"https://github.com/Falconerd/discord-bot-github.git\",\"svn_url\":\"https://github.com/Falconerd/discord-bot-github\",\"homepage\":null,\"size\":700,\"stargazers_count\":276,\"watchers_count\":276,\"language\":\"JavaScript\",\"has_issues\":true,\"has_projects\":true,\"has_downloads\":true,\"has_wiki\":true,\"has_pages\":false,\"forks_count\":127,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":22,\"license\":{\"key\":\"mit\",\"name\":\"MIT License\",\"spdx_id\":\"MIT\",\"url\":\"https://api.github.com/licenses/mit\",\"node_id\":\"MDc6TGljZW5zZTEz\"},\"forks\":127,\"open_issues\":22,\"watchers\":276,\"default_branch\":\"develop-es6\"},\"sender\":{\"login\":\"Falconerd\",\"id\":1349538,\"node_id\":\"MDQ6VXNlcjEzNDk1Mzg=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/1349538?v=4\",\"gravata_id\":\"\",\"url\":\"https://api.github.com/users/Falconerd\",\"html_url\":\"https://github.com/Falconerd\",\"followers_url\":\"https://api.github.com/users/Falconerd/followers\",\"following_url\":\"https://api.github.com/users/Falconerd/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/Falconerd/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/Falconerd/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/Falconerd/subscriptions\",\"organizations_url\":\"https://api.github.com/users/Falconerd/orgs\",\"repos_url\":\"https://api.github.com/users/Falconerd/repos\",\"events_url\":\"https://api.github.com/users/Falconerd/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/Falconerd/received_events\",\"type\":\"User\",\"site_admin\":false}";
 
-	// // split path into keys
-	// int key = 0;
-	// int j = 0;
-	// for (int i = 0; i < strlen(path_string); ++i) {
-	// 	if (path_string[i] == '.') {
-	// 		++key;
-	// 		j = 0;
-	// 		++path.depth;
-	// 		continue;
-	// 	}
-	// 	path.keys[key][j] = path_string[i];
-	// }
+#define IN_KEY 1
+#define IN_VALUE 2
+#define AFTER_KEY 3
+#define AFTER_VALUE 4
 
-	// int depth = 0;
-	// for (int i = 0; i < payload.length && depth < path.depth; ++i) {
-	// 	if (payload.data[i] == '"') {
-	// 		++i;
-	// 		if (memcmp(&payload.data[i], path.keys[depth].data, path.keys[depth].length) == 0) {
-	// 			printf("\n FOUND: %.*s\n", (int)path.keys[depth].length, &payload.data[i]);
-	// 			++depth;
-	// 		}
-	// 	}
-	// }
+Node *find_sibling(Node *node, const char *key) {
+	while (node != NULL) {
+		if (memcmp(node->key.data, key, node->key.length) == 0) {
+			return node;
+		}
+		node = node->next;
+	}
+	return NULL;
+}
 
-	// printf("\ndid we find %.*s?\n", (int)path.keys[0].length, path.keys[0].data);
+// path like "hook.type"
+Node *find_node(Tree tree, const char *path) {
+	char *path_copy = malloc(strlen(path) * sizeof(char));
+	strcpy(path_copy, path);
+	char *token = strtok(path_copy, ".");
+	Node *curr = tree.root->child;
+	int depth = 0;
+	while (token != NULL) {
+		printf("%s\n", token);
+
+		Node *found = find_sibling(curr, token);
+		if (found == NULL) {
+			printf("NULL\n");
+			return NULL;
+		} else {
+			printf("found: %.*s\n", (int)found->value.length, found->value.data);
+			curr = found->child;
+		}
+
+		// get next token
+		token = strtok(NULL, ".");
+	}
+}
+
+Tree json_to_tree(String json) {
+	Tree tree = {0};
+
+	int state = IN_KEY;
+	bool in_quotes = false;
+	int array_depth = 0;
+
+	Node *root = tree_create(&tree, NULL, NULL);
+	Node *parent = root;
+	Node *current_node = NULL;
+
+	if (json.data[1] != '"') {
+		fprintf(stderr, "Invalid JSON\n");
+		exit(-1);
+	}
+
+	current_node = tree_create(&tree, root, NULL);
+	current_node->key.data = &json.data[1];
+
+	for (int i = 1; i < json.length; ++i) {
+		char *c = &json.data[i];
+		switch (state) {
+		case AFTER_KEY: {
+			// is this a child or a sibling?
+			// or an array
+			if (*c == '[') {
+				++current_node->value.length;
+				current_node->value.data = c;
+				while (*c != ']') {
+					++current_node->value.length;
+					++i;
+					c = &json.data[i];
+				}
+				// skip IN_VALUE for arrays
+				printf("(%p) value: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
+				state = AFTER_VALUE;
+			} else if (*c == '{') {
+				parent = current_node;
+				state = IN_KEY;
+				Node *new_node = tree_create(&tree, parent, NULL);
+				current_node = new_node;
+				current_node->key.data = c+1;
+			} else {
+				if (*c == '"') {
+					in_quotes = true;
+				}
+				state = IN_VALUE;
+				current_node->value.data = c;
+			}
+		} break;
+		case AFTER_VALUE: {
+			// are we going up a level?
+			if (*c == '}') {
+				parent = parent->parent;
+				current_node = parent;
+			} else if (*c == '"') {
+				state = IN_KEY;
+				Node *new_node = tree_create(&tree, parent, current_node);
+				current_node = new_node;
+				current_node->key.data = c;
+				current_node->key.length = 1;
+			}
+		} break;
+		case IN_KEY: {
+			// find end of key
+			if (*c == ':' && *(c-1) == '"') {
+				state = AFTER_KEY;
+				++current_node->key.data;
+				current_node->key.length -= 2;
+				printf("(%p) key: %.*s\n", current_node, (int)current_node->key.length, current_node->key.data);
+			} else {
+				++current_node->key.length;
+			}
+		} break;
+		case IN_VALUE: {
+			// go until " without a \ before it
+			// go until , if not in quotes
+			// go until } if not in quotes
+			if (*c == '"') {
+				if (*(c+1) == '\\') {
+					++current_node->value.length;
+				} else {
+					in_quotes = false;
+					state = AFTER_VALUE;
+					++current_node->value.data;
+					printf("(%p) value: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
+				}
+			} else if (*c == ',') {
+				if (in_quotes) {
+					++current_node->value.length;
+				} else {
+					++current_node->value.length;
+					state = AFTER_VALUE;
+					printf("(%p) value2: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
+				}
+			} else if (*c == '}') {
+				if (in_quotes) {
+					++current_node->value.length;
+				} else {
+					++current_node->value.length;
+					state = AFTER_VALUE;
+					printf("(%p) value3: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
+				}
+			} else {
+				++current_node->value.length;
+			}
+		} break;
+		}
+	}
+
+	find_node(tree, "repository.owner.subscriptions_url");
+	find_node(tree, "sender.site_admin");
+
+	return tree;
 }
 
 void process_request(char *buffer, size_t length) {
@@ -362,13 +462,8 @@ void process_request(char *buffer, size_t length) {
 		item = item->next;
 	}
 
-	printf("\n%.*s\n", (int)event_type.length, event_type.data);
-	printf("\n%.*s\n", (int)signature.length, signature.data);
-	printf("\n%.*s\n", (int)payload.length, payload.data);
-
-	json_to_tree(payload);
-
-	// search_payload("hook.id", payload);
+	Tree tree = json_to_tree(payload);
+	find_node(tree, "hook.id");
 }
 
 void *handle_connection(void *pclient) {
