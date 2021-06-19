@@ -18,9 +18,8 @@
  * [X] implement thread pool
  * [X] test what happens when using slow DOS attack
  * [X] read the request body into a string
- * [ ] extract relevant data from the string
-         * does this need to be a tree?
- * [ ] print what the discord message would be
+ * [X] extract relevant data from the string
+ * [X] print what the discord message would be
  * [X] timeout after N seconds
 
  * [ ] implement HMAC SHA-256
@@ -145,271 +144,6 @@ int *dequeue() {
 	}
 }
 
-/* event types */
-// check_run
-// check_suite
-// code_scanning_alert
-// commit_comment
-// content_reference
-// create
-// delete
-// deploy_key
-// deployment
-// deployment_status
-// discussion
-// discussion_comment
-// fork
-// github_app_authorization
-// gollum
-// installation
-// installation_repositories
-// issue_comment
-// issues
-// label
-// marketplace_purchase
-// member
-// membership
-// meta
-// milestone
-// organization
-// org_block
-// package
-// page_build
-// ping
-// project_card
-// project_column
-// project
-// public
-// pull_request
-// pull_request_review
-// pull_request_review_comment
-// push
-// release
-// repository_dispatch
-// repository
-// repository_import
-// repository_vulnerability_alert
-// secret_scanning_alert
-// security_advisory
-// sponsorship
-// star
-// status
-// team
-// team_add
-// watch
-// workflow_dispatch
-// workflow_run
-
-/*
- * turn json object into tree
- * 
- * input: {
-  "zen": "woah",
-  "foo": {
-    "bar": "wat",
-    "baz": 42,
-    "wow": {
-      "surpise": 17
-    }
-  },
-  "xor": "xand"
-}
- * output:
- * zen: woah - foo - xor: xand
- *              | 
- *             bar: wat - baz: 42
- */
-
-typedef struct node Node;
-struct node {
-	String key;
-	String value;
-	Node *next;
-	Node *child; // if child != NULL, value is NULL
-	Node *parent;
-};
-
-typedef struct tree {
-	Node *root;
-} Tree;
-
-Node *tree_create(Tree *tree, Node *parent, Node *prev) {
-	Node *node = malloc(sizeof(Node));
-	memset(node, 0, sizeof(Node));
-	if (parent == NULL) {
-		tree->root = node;
-		return node;
-	} else {
-		if (parent->child == NULL) {
-			parent->child = node;
-		}
-	}
-
-	if (prev != NULL) {
-		prev->next = node;
-	}
-	node->parent = parent;
-
-	return node;
-}
-
-char *ping_payload = "{\"zen\":\"Design for failure.\",\"hook_id\":301812344,\"test\":[1,2,3,4],\"hook\":{\"type\":\"Repository\",\"id\":301812344,\"name\":\"web\",\"active\":true,\"events\":[\"*\"],\"config\":{\"content_type\":\"form\",\"insecure_ssl\":\"0\",\"secret\":\"********\",\"url\":\"http://58.84.181.43:8080\"},\"updated_at\":\"2021-06-10T10:10:42Z\",\"created_at\":\"2021-06-10T10:10:42Z\",\"url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks/301812344\",\"test_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks/301812344/test\",\"ping_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks/301812344/pings\",\"last_response\":{\"code\":null,\"status\":\"unused\",\"message\":null}},\"repository\":{\"id\":48586289,\"node_id\":\"MDEwOlJlcG9zaXRvcnk0ODU4NjI4OQ==\",\"name\":\"discord-bot-github\",\"full_name\":\"Falconerd/discord-bot-github\",\"private\":false,\"owner\":{\"login\":\"Falconerd\",\"id\":1349538,\"node_id\":\"MDQ6VXNlcjEzNDk1Mzg=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/1349538?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/Falconerd\",\"html_url\":\"https://github.com/Falconerd\",\"followers_url\":\"https://api.github.com/users/Falconerd/followers\",\"following_url\":\"https://api.github.com/users/Falconerd/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/Falconerd/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/Falconerd/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/Falconerd/subscriptions\",\"organizations_url\":\"https://api.github.com/users/Falconerd/orgs\",\"repos_url\":\"https://api.github.com/users/Falconerd/repos\",\"events_url\":\"https://api.github.com/users/Falconerd/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/Falconerd/received_events\",\"type\":\"User\",\"site_admin\":false},\"html_url\":\"https://github.com/Falconerd/discord-bot-github\",\"description\":\"A bot for discord which consumes the GitHub API and gives you updates.\",\"fork\":false,\"url\":\"https://api.github.com/repos/Falconerd/discord-bot-github\",\"forks_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/forks\",\"keys_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/teams\",\"hooks_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/hooks\",\"issue_events_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/events\",\"assignees_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/tags\",\"blobs_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/languages\",\"stargazers_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/stargazers\",\"contributors_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/contributors\",\"subscribers_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/subscribers\",\"subscription_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/subscription\",\"commits_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/merges\",\"archive_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/downloads\",\"issues_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/Falconerd/discord-bot-github/deployments\",\"created_at\":\"2015-12-25T16:50:32Z\",\"updated_at\":\"2021-06-09T21:28:43Z\",\"pushed_at\":\"2021-06-09T13:43:01Z\",\"git_url\":\"git://github.com/Falconerd/discord-bot-github.git\",\"ssh_url\":\"git@github.com:Falconerd/discord-bot-github.git\",\"clone_url\":\"https://github.com/Falconerd/discord-bot-github.git\",\"svn_url\":\"https://github.com/Falconerd/discord-bot-github\",\"homepage\":null,\"size\":700,\"stargazers_count\":276,\"watchers_count\":276,\"language\":\"JavaScript\",\"has_issues\":true,\"has_projects\":true,\"has_downloads\":true,\"has_wiki\":true,\"has_pages\":false,\"forks_count\":127,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":22,\"license\":{\"key\":\"mit\",\"name\":\"MIT License\",\"spdx_id\":\"MIT\",\"url\":\"https://api.github.com/licenses/mit\",\"node_id\":\"MDc6TGljZW5zZTEz\"},\"forks\":127,\"open_issues\":22,\"watchers\":276,\"default_branch\":\"develop-es6\"},\"sender\":{\"login\":\"Falconerd\",\"id\":1349538,\"node_id\":\"MDQ6VXNlcjEzNDk1Mzg=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/1349538?v=4\",\"gravata_id\":\"\",\"url\":\"https://api.github.com/users/Falconerd\",\"html_url\":\"https://github.com/Falconerd\",\"followers_url\":\"https://api.github.com/users/Falconerd/followers\",\"following_url\":\"https://api.github.com/users/Falconerd/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/Falconerd/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/Falconerd/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/Falconerd/subscriptions\",\"organizations_url\":\"https://api.github.com/users/Falconerd/orgs\",\"repos_url\":\"https://api.github.com/users/Falconerd/repos\",\"events_url\":\"https://api.github.com/users/Falconerd/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/Falconerd/received_events\",\"type\":\"User\",\"site_admin\":false}";
-
-#define IN_KEY 1
-#define IN_VALUE 2
-#define AFTER_KEY 3
-#define AFTER_VALUE 4
-
-Node *find_sibling(Node *node, const char *key) {
-	while (node != NULL) {
-		if (memcmp(node->key.data, key, node->key.length) == 0) {
-			return node;
-		}
-		node = node->next;
-	}
-	return NULL;
-}
-
-// path like "hook.type"
-Node *find_node(Tree tree, const char *path) {
-	char *path_copy = malloc(strlen(path) * sizeof(char));
-	strcpy(path_copy, path);
-	char *token = strtok(path_copy, ".");
-	Node *curr = tree.root->child;
-	int depth = 0;
-	while (token != NULL) {
-		printf("%s\n", token);
-
-		Node *found = find_sibling(curr, token);
-		if (found == NULL) {
-			printf("NULL\n");
-			return NULL;
-		} else {
-			printf("found: %.*s\n", (int)found->value.length, found->value.data);
-			curr = found->child;
-		}
-
-		// get next token
-		token = strtok(NULL, ".");
-	}
-}
-
-Tree json_to_tree(String json) {
-	Tree tree = {0};
-
-	int state = IN_KEY;
-	bool in_quotes = false;
-	int array_depth = 0;
-
-	Node *root = tree_create(&tree, NULL, NULL);
-	Node *parent = root;
-	Node *current_node = NULL;
-
-	if (json.data[1] != '"') {
-		fprintf(stderr, "Invalid JSON\n");
-		exit(-1);
-	}
-
-	current_node = tree_create(&tree, root, NULL);
-	current_node->key.data = &json.data[1];
-
-	for (int i = 1; i < json.length; ++i) {
-		char *c = &json.data[i];
-		switch (state) {
-		case AFTER_KEY: {
-			// is this a child or a sibling?
-			// or an array
-			if (*c == '[') {
-				++current_node->value.length;
-				current_node->value.data = c;
-				while (*c != ']') {
-					++current_node->value.length;
-					++i;
-					c = &json.data[i];
-				}
-				// skip IN_VALUE for arrays
-				printf("(%p) value: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
-				state = AFTER_VALUE;
-			} else if (*c == '{') {
-				parent = current_node;
-				state = IN_KEY;
-				Node *new_node = tree_create(&tree, parent, NULL);
-				current_node = new_node;
-				current_node->key.data = c+1;
-			} else {
-				if (*c == '"') {
-					in_quotes = true;
-				}
-				state = IN_VALUE;
-				current_node->value.data = c;
-			}
-		} break;
-		case AFTER_VALUE: {
-			// are we going up a level?
-			if (*c == '}') {
-				parent = parent->parent;
-				current_node = parent;
-			} else if (*c == '"') {
-				state = IN_KEY;
-				Node *new_node = tree_create(&tree, parent, current_node);
-				current_node = new_node;
-				current_node->key.data = c;
-				current_node->key.length = 1;
-			}
-		} break;
-		case IN_KEY: {
-			// find end of key
-			if (*c == ':' && *(c-1) == '"') {
-				state = AFTER_KEY;
-				++current_node->key.data;
-				current_node->key.length -= 2;
-				printf("(%p) key: %.*s\n", current_node, (int)current_node->key.length, current_node->key.data);
-			} else {
-				++current_node->key.length;
-			}
-		} break;
-		case IN_VALUE: {
-			// go until " without a \ before it
-			// go until , if not in quotes
-			// go until } if not in quotes
-			if (*c == '"') {
-				if (*(c+1) == '\\') {
-					++current_node->value.length;
-				} else {
-					in_quotes = false;
-					state = AFTER_VALUE;
-					++current_node->value.data;
-					printf("(%p) value: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
-				}
-			} else if (*c == ',') {
-				if (in_quotes) {
-					++current_node->value.length;
-				} else {
-					++current_node->value.length;
-					state = AFTER_VALUE;
-					printf("(%p) value2: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
-				}
-			} else if (*c == '}') {
-				if (in_quotes) {
-					++current_node->value.length;
-				} else {
-					++current_node->value.length;
-					state = AFTER_VALUE;
-					printf("(%p) value3: %.*s\n", current_node, (int)current_node->value.length, current_node->value.data);
-				}
-			} else {
-				++current_node->value.length;
-			}
-		} break;
-		}
-	}
-
-	find_node(tree, "repository.owner.subscriptions_url");
-	find_node(tree, "sender.site_admin");
-
-	return tree;
-}
-
 void process_request(char *buffer, size_t length) {
 	List list = {0};
 	size_t EOL = 0;
@@ -462,24 +196,21 @@ void process_request(char *buffer, size_t length) {
 		item = item->next;
 	}
 
-	Tree tree = json_to_tree(payload);
-	find_node(tree, "hook.id");
+	// Tree tree = json_to_tree(payload);
+	// find_node(tree, "hook.id");
 }
 
 void *handle_connection(void *pclient) {
 	int client_socket = *((int*)pclient);
 	free(pclient);
-	char *buffer = malloc(sizeof(char) * (BUFFER_SIZE+1));
-	char *recv_line = malloc(sizeof(char) * (BUFFER_SIZE+1));
+	char *buffer = calloc(BUFFER_SIZE + 1, 1);
+	char *recv_line = calloc(BUFFER_SIZE + 1, 1);
 	char *response_success = "HTTP/1.1 202 Accepted\r\n\r\n";
 	char *response_failure = "HTTP/1.1 403 Forbidden\r\n\r\n";
 
 	struct timeval tv = {0};
 	tv.tv_sec = 1;
 	setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tv, sizeof(struct timeval));
-
-	memset(recv_line, 0, BUFFER_SIZE);
-	memset(buffer, 0, BUFFER_SIZE);
 
 	int chunk = 0;
 	int status = 202;
@@ -493,7 +224,7 @@ void *handle_connection(void *pclient) {
 		offset += n;
 
 		if (0 == chunk) {
-			int m = memcmp(recv_line, "POST / ", 7 * sizeof(char));
+			int m = memcmp(recv_line, "POST / ", 7);
 			if (0 != m) {
 				status = 403;
 				fprintf(stdout, "\nBad request\n");
@@ -551,9 +282,311 @@ void check(int code, const char *message) {
 	}
 }
 
+static char *branch_from_ref(json_t const *ref) {
+	char *branch = strrchr(json_getValue(ref), '/');
+	return ++branch;
+}
+
+static void commit_comment_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *commit = json_getPropertyValue(json_getProperty(json, "comment"), "commit_id");
+	const char *user = json_getPropertyValue(json_getProperty(json_getProperty(json, "comment"), "user"), "login");
+	const char *body = json_getPropertyValue(json_getProperty(json, "comment"), "body");
+	const char *fmt = "[**%s _%.*s_**] New comment on commit by %s\n%s\n";
+	size_t len = strlen(repo) + 7 + strlen(user) + strlen(body) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, 7, commit, user, body);
+	*message = buffer;
+}
+
+static void create_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *type = json_getPropertyValue(json, "ref_type");
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *user = json_getPropertyValue(json_getProperty(json, "sender"), "login");
+	const char *ref = json_getPropertyValue(json, "ref");
+	const char *fmt = "[**%s**] %s created a %s: %s\n";
+	size_t len = strlen(repo) + strlen(type) + strlen(user) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, user, type, ref);
+	*message = buffer;
+}
+
+static void delete_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *type = json_getPropertyValue(json, "ref_type");
+	const char *user = json_getPropertyValue(json_getProperty(json, "sender"), "login");
+	const char *ref = json_getPropertyValue(json, "ref");
+	const char *fmt = "[**%s**] %s deleted a %s: %s\n";
+	size_t len = strlen(repo) + strlen(type) + strlen(user) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, user, type, ref);
+	*message = buffer;
+}
+
+static void fork_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *fork = json_getPropertyValue(json_getProperty(json, "forkee"), "full_name");
+	const char *fmt = "[**%s**] -> *%s*\nForm created.\n";
+	size_t len = strlen(repo) + strlen(fork) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, fork);
+	*message = buffer;
+}
+
+static void gollum_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *user = json_getPropertyValue(json_getProperty(json, "sender"), "login");
+	const json_t const *page_list = json_getProperty(json, "pages");
+
+	const char *fmt = "[**%s**] Wiki was updated by %s\n";
+	size_t buffer_size = strlen(fmt) + strlen(repo) + strlen(user) + 1;
+	buffer = calloc(buffer_size, 1);
+
+	json_t const *page;
+	for (page = json_getChild(page_list); page != 0; page = json_getSibling(page)) {
+		char *page_buffer = NULL;
+		const char *title = json_getPropertyValue(page, "title");
+		const char *action = json_getPropertyValue(page, "action");
+		const char *page_fmt = "**%s:** %s\n";
+		size_t len = strlen(title) + strlen(action) + strlen(page_fmt) + 1;
+		page_buffer = calloc(len, 1);
+		sprintf(page_buffer, page_fmt, title, action);
+		buffer_size += len;
+		buffer = realloc(buffer, buffer_size);
+		strcat(buffer, page_buffer);
+		free(page_buffer);
+	}
+	*message = buffer;
+}
+
+static void issue_comment_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *user = json_getPropertyValue(json_getProperty(json_getProperty(json, "comment"), "user"), "login");
+	const char *url = json_getPropertyValue(json_getProperty(json, "comment"), "html_url");
+	const char *body = json_getPropertyValue(json_getProperty(json, "comment"), "body");
+	const char *title = json_getPropertyValue(json_getProperty(json, "issue"), "title");
+	const char *fmt = "[**%s**] Comment created on issue: %s by %s\n<%s>\n%s\n";
+	size_t len = strlen(repo) + strlen(user) + strlen(url) + strlen(body) + strlen(title) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, title, user, url, body);
+	*message = buffer;
+}
+
+static void issues_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *action = json_getPropertyValue(json, "action");
+	const char *user = json_getPropertyValue(json_getProperty(json, "sender"), "login");
+	const char *url = json_getPropertyValue(json_getProperty(json, "issue"), "html_url");
+	const char *fmt = "[**%s**] Issue %s by %s\n<%s>\n";
+	size_t len = strlen(repo) + strlen(user) + strlen(url) + strlen(url) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, action, user, url);
+	*message = buffer;
+}
+
+static void member_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *user = json_getPropertyValue(json_getProperty(json, "member"), "login");
+	const char *url = json_getPropertyValue(json_getProperty(json, "member"), "html_url");
+	const char *fmt = "[**%s**] New collaborator added: %s\n<%s>\n";
+	size_t len = strlen(repo) + strlen(user) + strlen(url) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, user, url);
+	*message = buffer;
+}
+
+static void public_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *fmt = "[**%s**] Has been made open source!\n";
+	size_t len = strlen(repo) + strlen(fmt);
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo);
+	*message = buffer;
+}
+
+static void pull_request_review_comment_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *action = json_getPropertyValue(json, "action");
+	const char *user = json_getPropertyValue(json_getProperty(json_getProperty(json, "comment"), "user"), "login");
+	const char *body = json_getPropertyValue(json_getProperty(json, "comment"), "body");
+	const char *url = json_getPropertyValue(json_getProperty(json, "comment"), "html_url");
+	const char *fmt = "[**%s**] Pull request comment %s by %s:\n%s\n%s\n";
+	size_t len = strlen(repo) + strlen(body) + strlen(action) + strlen(user) + strlen(url) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, action, user, body, url);
+	*message = buffer;
+}
+
+static void pull_request_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *action = json_getPropertyValue(json, "action");
+	const char *user = json_getPropertyValue(json_getProperty(json, "sender"), "login");
+	const char *body = json_getPropertyValue(json_getProperty(json, "pull_request"), "body");
+	const char *url = json_getPropertyValue(json_getProperty(json, "pull_request"), "html_url");
+	const char *fmt = "[**%s**] Pull request %s by %s:\n%s\n%s\n";
+	size_t len = strlen(repo) + strlen(body) + strlen(action) + strlen(user) + strlen(url) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, action, user, body, url);
+	*message = buffer;
+}
+
+static void push_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *branch = branch_from_ref(json_getProperty(json, "ref"));
+	const json_t const *commit_list = json_getProperty(json, "commits");
+
+	int count = 0;
+	json_t const *commit;
+	for (commit = json_getChild(commit_list); commit != 0; commit = json_getSibling(commit), ++count);
+	char *tmp[20] = {0};
+	sprintf(tmp, "%d", count);
+	size_t count_length = strlen(tmp);
+
+	if (count == 0) {
+		const char *pusher_name = json_getPropertyValue(json_getProperty(json, "pusher"), "name");
+		const char *compare = json_getPropertyValue(json, "compare");
+		const char *fmt = "[**%s:%s**] push by %s\n<%s>\n";
+		size_t len = strlen(repo) + strlen(branch) + strlen(pusher_name) + strlen(fmt) + 1;
+		buffer = calloc(len, 1);
+		sprintf(buffer, fmt, repo, branch, pusher_name, compare);
+		*message = buffer;
+		return;
+	}
+
+	if (count == 1) {
+		commit = json_getChild(commit_list);
+		const char *name = json_getPropertyValue(json_getProperty(commit, "author"), "name");
+		const char *commit_message = json_getPropertyValue(commit, "message");
+		const char *id = json_getPropertyValue(commit, "id");
+		const char *fmt = "[**%s:%s**] 1 new commit by %s\n%s\n<https://github.com/%s/commit/%.*s>\n";
+		size_t len = strlen(name) + strlen(commit_message) + 7 + strlen(fmt) + 1;
+		buffer = calloc(len, 1);
+		sprintf(buffer, fmt, repo, branch, name, commit_message, repo, 7, id);
+		*message = buffer;
+		return;
+	} 
+
+
+	const char *fmt = "[**%s:%s**] %d new commits\n";
+	size_t buffer_size = strlen(fmt) + strlen(repo) + strlen(branch) + count_length + 1;
+	buffer = malloc(buffer_size);
+	sprintf(buffer, fmt, repo, branch, count);
+	for (commit = json_getChild(commit_list); commit != 0; commit = json_getSibling(commit)) {
+		char *commit_buffer = NULL;
+		const char *name = json_getPropertyValue(json_getProperty(commit, "author"), "name");
+		const char *commit_message = json_getPropertyValue(commit, "message");
+		const char *id = json_getPropertyValue(commit, "id");
+		const char *commit_fmt = "%s - %s <https://github.com/%s/commit/%.*s>\n";
+		size_t len = strlen(name) + strlen(commit_message) + strlen(repo) + 7 + strlen(commit_fmt) + 1;
+		commit_buffer = calloc(len, 1);
+		sprintf(commit_buffer, commit_fmt, commit_message, name, repo, 7, id);
+		buffer_size += len;
+		buffer = realloc(buffer, buffer_size);
+		strcat(buffer, commit_buffer);
+		free(commit_buffer);
+	}
+	*message = buffer;
+}
+
+static void release_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *user = json_getPropertyValue(json_getProperty(json_getProperty(json, "release"), "author"), "login");
+	const char *url = json_getPropertyValue(json_getProperty(json, "release"), "html_url");
+	const char *fmt = "[**%s**] Release published by %s:\n<%s>\n";
+	size_t len = strlen(repo) + strlen(user) + strlen(url) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, user, url);
+	*message = buffer;
+}
+
+static void status_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *sha = json_getPropertyValue(json, "sha");
+	const char *state = json_getPropertyValue(json, "state");
+	const char *fmt = "[**%s**] commit %.*s state updated to %s\n<https://github.com/%s/commit/%.*s>\n";
+	size_t len = strlen(repo) + 7 + strlen(state) + strlen(repo) + 7 + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, 7, sha, state, repo, 7, sha);
+	*message = buffer;
+}
+
+static void watch_message(char **message, json_t const *json) {
+	char *buffer = NULL;
+	const char *repo = json_getPropertyValue(json_getProperty(json, "repository"), "full_name");
+	const char *user = json_getPropertyValue(json_getProperty(json, "sender"), "login");
+	const char *fmt = "[**%s**] Starred by %s\n";
+	size_t len = strlen(repo) + strlen(user) + strlen(fmt) + 1;
+	buffer = calloc(len, 1);
+	sprintf(buffer, fmt, repo, user);
+	*message = buffer;
+}
+
+int read_file_into_buffer(char **str, const char *path) {
+	FILE *fp = fopen(path, "rb");
+	if (fp == NULL) {
+		fprintf(stderr, "Cannot open file: %s\n", path);
+		exit(-1);
+	}
+	if (fseek(fp, 0, SEEK_END) != 0) {
+		fprintf(stderr, "Cannot seek file: %s\n", path);
+		exit(-1);
+	}
+	size_t len = ftell(fp);
+	char *buf = malloc(len + 1);
+	fseek(fp, 0, SEEK_SET);
+	fread(buf, 1, len, fp);
+	buf[len] = 0;
+	fclose(fp);
+	printf("%s", buf);
+	*str = buf;
+	return len;
+}
+
 int main(void) {
+	char *str = NULL;
+	read_file_into_buffer(&str, "status.json");
+
+	json_t mem[512];
+	json_t const *json = json_create(str, mem, sizeof(mem) / sizeof(*mem));
+	if (!json) {
+		fprintf(stderr, "Could not create json\n");
+		return -1;
+	}
+
+	char *message = NULL;
+	status_message(&message, json);
+	printf("%s", message);
+
+	char *db = NULL;
+	read_file_into_buffer(&db, "db.json");
+
+	json_t const *db_json = json_create(db, mem, sizeof(mem) / sizeof(*mem));
+	if (!json) {
+		fprintf(stderr, "Could not create json\n");
+		return -1;
+	}
+
+	free(db);
+	free(str);
+	free(message);
+
+	return 0;
 	int server_socket, client_socket;
-	SA_IN server_addr;
+	SA_IN server_addr = {0};
 
 	for (int i = 0; i < THREAD_POOL_SIZE-1; ++i) {
 		pthread_create(&thread_pool[i], NULL, thread_function, NULL);
@@ -561,7 +594,7 @@ int main(void) {
 
 	check((server_socket = socket(AF_INET, SOCK_STREAM, 0)), "Socket err");
 
-	memset(&server_addr, 0, sizeof(server_addr));
+	// memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	server_addr.sin_port = htons(PORT);
