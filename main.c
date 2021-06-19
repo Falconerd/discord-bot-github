@@ -26,23 +26,17 @@
  * [ ] check github signature
 
  * [ ] connect to discord with a bot authentication
- * [ ] create a hash table to store all subscriptions
- * [ ] copy mongodb subscriptions into a file
- * [ ] create the flat file db format
-	 * <org>/<repo> <channel_id> [<secret>]
-	 * if the webhook has a hash, any enties without one are invalid
-	 * this gives us private repos, too
-	 * for now the db will be 1 line per entry, no need to over-complicate it
- * [ ] read db into memory on startup
+ * [ ] copy mongodb subscriptions into a json file
+ * [ ] remove all duplicates
+ * [X] read db into memory on startup
  * [ ] create query function into db
  * [ ] write all action responses
  * [ ] discord command for adding repo
- 	 * if not private, don't check if repo exists
- 	 	 * could create db bloat via bad actors
- 	 	 * perhaps if private flag is used, a verification event is needed?
- 	 * make sure to check for duplicates
+ 	 * [ ] check for duplicates
+ 	 * [ ] always use secret for private repos
  * [ ] discord command for removing repo
- * [ ] remove all unecessary printing or put to logs
+ * [ ] remove all unecessary printing
+ * [ ] create log files
  */
 
 /* Many thanks to Jacob Sorber
@@ -556,9 +550,48 @@ int read_file_into_buffer(char **str, const char *path) {
 	return len;
 }
 
+typedef enum event_type {
+	EVENT_TYPE_COMMIT_COMMENT,
+	EVENT_TYPE_CREATE,
+	EVENT_TYPE_DELETE,
+	EVENT_TYPE_FORK,
+	EVENT_TYPE_GOLLUM,
+	EVENT_TYPE_ISSUE_COMMENT,
+	EVENT_TYPE_ISSUES,
+	EVENT_TYPE_MEMBER,
+	EVENT_TYPE_PUBLIC,
+	EVENT_TYPE_PULL_REQUEST_REVIEW_COMMENT,
+	EVENT_TYPE_PULL_REQUEST,
+	EVENT_TYPE_PUSH,
+	EVENT_TYPE_RELEASE,
+	EVENT_TYPE_STATUS,
+	EVENT_TYPE_WATCH
+} Event_Type;
+
+static int handle_message(char **message, json_t const *json, Event_Type type) {
+	switch (type) {
+	case EVENT_TYPE_COMMIT_COMMENT: commit_comment_message(message, json); break;
+	case EVENT_TYPE_CREATE: create_message(message, json); break;
+	case EVENT_TYPE_DELETE: delete_message(message, json); break;
+	case EVENT_TYPE_FORK: fork_message(message, json); break;
+	case EVENT_TYPE_GOLLUM: gollum_message(message, json); break;
+	case EVENT_TYPE_ISSUE_COMMENT: issue_comment_message(message, json); break;
+	case EVENT_TYPE_ISSUES: issues_message(message, json); break;
+	case EVENT_TYPE_MEMBER: member_message(message, json); break;
+	case EVENT_TYPE_PUBLIC: public_message(message, json); break;
+	case EVENT_TYPE_PULL_REQUEST_REVIEW_COMMENT: pull_request_review_comment_message(message, json); break;
+	case EVENT_TYPE_PULL_REQUEST: pull_request_message(message, json); break;
+	case EVENT_TYPE_PUSH: push_message(message, json); break;
+	case EVENT_TYPE_RELEASE: release_message(message, json); break;
+	case EVENT_TYPE_STATUS: status_message(message, json); break;
+	case EVENT_TYPE_WATCH: watch_message(message, json); break;
+	}
+	return 0;
+}
+
 int main(void) {
 	char *str = NULL;
-	read_file_into_buffer(&str, "status.json");
+	read_file_into_buffer(&str, "tests/status.json");
 
 	json_t mem[512];
 	json_t const *json = json_create(str, mem, sizeof(mem) / sizeof(*mem));
@@ -568,7 +601,8 @@ int main(void) {
 	}
 
 	char *message = NULL;
-	status_message(&message, json);
+	Event_Type event_type = EVENT_TYPE_STATUS;
+	handle_message(&message, json, event_type);
 	printf("%s", message);
 
 	char *db = NULL;
