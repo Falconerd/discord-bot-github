@@ -589,36 +589,76 @@ static int handle_message(char **message, json_t const *json, Event_Type type) {
 	return 0;
 }
 
+static int hostname_to_ip(char *ip, const char *hostname) {
+	struct addrinfo;
+	struct hostent *he;
+	struct in_addr **addr_list;
+	int i;
+
+	if ((he = gethostbyname(hostname)) == NULL) {
+		herror("gethostbyname");
+		return -1;
+	}
+
+	addr_list = (SA_IN**)he->h_addr_list;
+
+	for (i = 0; addr_list[i] != NULL; ++i) {
+		strcpy(ip, inet_ntoa(*addr_list[i]));
+		// return 0;
+	}
+
+	return 1;
+}
+
 int main(void) {
-	char *str = NULL;
-	read_file_into_buffer(&str, "tests/status.json");
+	// char *str = NULL;
+	// read_file_into_buffer(&str, "tests/status.json");
 
-	json_t mem[512];
-	json_t const *json = json_create(str, mem, sizeof(mem) / sizeof(*mem));
-	if (!json) {
-		fprintf(stderr, "Could not create json\n");
-		return -1;
-	}
+	// json_t mem[512];
+	// json_t const *json = json_create(str, mem, sizeof(mem) / sizeof(*mem));
+	// if (!json) {
+	// 	fprintf(stderr, "Could not create json\n");
+	// 	return -1;
+	// }
 
-	char *message = NULL;
-	Event_Type event_type = EVENT_TYPE_STATUS;
-	handle_message(&message, json, event_type);
-	printf("%s", message);
+	// char *message = NULL;
+	// Event_Type event_type = EVENT_TYPE_STATUS;
+	// handle_message(&message, json, event_type);
+	// printf("%s", message);
 
-	char *db = NULL;
-	read_file_into_buffer(&db, "db.json");
+	// char *db = NULL;
+	// read_file_into_buffer(&db, "db.json");
 
-	json_t const *db_json = json_create(db, mem, sizeof(mem) / sizeof(*mem));
-	if (!json) {
-		fprintf(stderr, "Could not create json\n");
-		return -1;
-	}
+	// json_t const *db_json = json_create(db, mem, sizeof(mem) / sizeof(*mem));
+	// if (!json) {
+	// 	fprintf(stderr, "Could not create json\n");
+	// 	return -1;
+	// }
 
-	free(db);
-	free(str);
-	free(message);
+	// free(db);
+	// free(str);
+	// free(message);
+
+	// return 0;
+// #define P 443	
+// #define ML 4096
+
+// 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+// 	SA_IN addr = {0};
+// 	addr.sin_family = AF_INET;
+// 	addr.sin_port = htons(P);
+
+// 	return 0;
+
+
+	char *hostname = "localhost";
+	char ip[100];
+
+	hostname_to_ip(hostname, ip);
+	printf("%s resolved to %s\n", hostname, ip);
 
 	return 0;
+
 	int server_socket, client_socket;
 	SA_IN server_addr = {0};
 
