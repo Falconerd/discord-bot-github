@@ -38,6 +38,10 @@ function repoFromInteraction(interaction: CommandInteraction): string {
   return `${org}/${name}`.toLowerCase();
 }
 
+function sanitize(text: string) {
+  return text.replace("@", "(at)");
+}
+
 // Handle use of discord slash commands.
 discordClient.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
@@ -121,7 +125,7 @@ async function handleRequest(request: Request) {
         continue;
       }
 
-      channel.send(message);
+      channel.send(sanitize(message));
     }
   }
 
