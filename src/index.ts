@@ -1,127 +1,182 @@
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
-import { Client, Intents } from "discord.js";
-import { MongoClient } from "mongodb";
+import { Client, Intents, TextChannel, Permissions, CommandInteraction } from "discord.js";
+import { Document, MongoClient } from "mongodb";
 import Hapi from "@hapi/hapi";
+import hmacSHA256 from "crypto-js/hmac-sha256";
+import { fixedTimeComparison } from "@hapi/cryptiles";
+import { eventToMessage } from "./messages";
+import { commands, add, remove } from "./commands";
 
-const { DB_URL, DB_NAME, TOKEN, PORT = 8080 } = process.env;
+type Request = {
+  headers: {
+    "x-github-event": string;
+    "x-hub-signature-256"?: string;
+  };
+  payload: {
+    repository: {
+      full_name: string;
+    };
+  };
+};
 
-// if (!DB_URL) process.exit(600);
-// if (!DB_NAME) process.exit(601);
-// if (!TOKEN) process.exit(602);
+const { DB_URL, DB_NAME, TOKEN, CLIENT_ID = "", PORT = 8080 } = process.env;
 
-// const dbClient = new MongoClient(DB_URL);
-// const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+if (!DB_URL) process.exit(600);
+if (!DB_NAME) process.exit(601);
+if (!TOKEN) process.exit(602);
+if (!CLIENT_ID) process.exit(603);
 
-// const commands = [
-//   {
-//     name: "dbg-add",
-//     description: "Add a subscription for the current channel",
-//     options: [
-//       {
-//         name: "organisation",
-//         description: "The GitHub Organisation or User",
-//         type: 3,
-//         required: true,
-//       },
-//       {
-//         name: "repo",
-//         description: "The repository name",
-//         type: 3,
-//         required: true,
-//       },
-//     ],
-//   },
-//   {
-//     name: "dbg-remove",
-//     description: "Remove a subscription from the current channel",
-//     options: [
-//       {
-//         name: "organisation",
-//         description: "The GitHub Organisation or User",
-//         type: 3,
-//         required: true,
-//       },
-//       {
-//         name: "repo",
-//         description: "The repository name",
-//         type: 3,
-//         required: true,
-//       },
-//     ],
-//   },
-// ];
+const mongodbClient = new MongoClient(DB_URL);
+const db = mongodbClient.db(DB_NAME);
+const discordClient = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const rest = new REST({ version: "9" }).setToken(TOKEN);
 
-// const rest = new REST({ version: "9" }).setToken(TOKEN);
+function repoFromInteraction(interaction: CommandInteraction): string {
+  const org = interaction.options.getString("org");
+  const name = interaction.options.getString("name");
+  return `${org}/${name}`.toLowerCase();
+}
 
-// (async () => {
-//   try {
-//     console.log("Started refreshing application (/) commands.");
+// Handle use of discord slash commands.
+discordClient.on("interactionCreate", async (interaction) => {
+  if (!interaction.isCommand()) return;
 
-//     await rest.put(Routes.applicationCommands("223737808697688064"), {
-//       body: commands,
-//     });
+  await interaction.deferReply();
 
-//     console.log("Successfully reloaded application (/) commands.");
-//   } catch (error) {
-//     console.error(error);
-//   }
-// })();
+  const db = mongodbClient.db(DB_NAME);
+  const subscriptions = db.collection("subscriptions");
 
-// client.on("ready", () => {
-//   console.log(`Logged in to Discord as ${client?.user?.tag}!`);
-// });
+  try {
+    const repo = repoFromInteraction(interaction);
+    const { channelId } = interaction;
 
-// client.on("interactionCreate", async (interaction) => {
-//   if (!interaction.isCommand()) return;
+    switch (interaction.commandName) {
+      case "dbg-add":
+        if (await add(repo, channelId, subscriptions)) {
+          await interaction.editReply(`Added a subscription for ${repo}.`);
+        } else {
+          await interaction.editReply("This channel has already subscribed to the repo.");
+        }
+        break;
+      case "dbg-remove":
+        await remove(repo, channelId, subscriptions);
+        await interaction.editReply(`Removed the subscription for ${repo}.`);
+        break;
+      default:
+        break;
+    }
+  } catch (error) {
+    console.log("There was some error adding or removing. See below.");
+    console.dir(error);
+  }
+});
 
-//   console.log(
-//     interaction.channelId,
-//     interaction.options.getString("organisation"),
-//     interaction.options.getString("repo")
-//   );
-// });
+async function handleRequest(request: Request) {
+  const eventType = request.headers["x-github-event"];
+  const signature = request.headers["x-hub-signature-256"];
 
+  const message = eventToMessage(eventType, request.payload);
+
+  if (message) {
+    const subscriptions = db.collection("subscriptions");
+
+    const query = { repo: request.payload.repository.full_name.toLowerCase() };
+
+    const res = await subscriptions.find(query).toArray();
+    let documents = res;
+
+    if (signature) {
+      documents = res.filter((item) => {
+        if (!item.secret) {
+          return false;
+        }
+
+        try {
+          const hash = "sha256=" + hmacSHA256(JSON.stringify(request.payload), item.secret).toString();
+          return fixedTimeComparison(hash, signature);
+        } catch (error) {
+          console.log("There was an error during hashing or stringifying the payload. See below.");
+          console.dir(error);
+          return false;
+        }
+      });
+    }
+
+    const channelIds = documents.map((item) => item.channelId);
+
+    for (let channelId of channelIds) {
+      const channel = discordClient.channels.cache.get(channelId) as TextChannel;
+
+      if (!channel) {
+        continue;
+      }
+
+      const hasPermission = channel.guild.me
+        ?.permissionsIn(channel)
+        .has([Permissions.FLAGS.SEND_MESSAGES, Permissions.FLAGS.EMBED_LINKS]);
+
+      if (!hasPermission) {
+        continue;
+      }
+
+      channel.send(message);
+    }
+  }
+
+  return null;
+}
+
+// Connect to discord, mongodb, and start the web server to listen for webhooks.
 async function main(): Promise<void> {
   try {
-    // Login to discord
-    // await client.login(TOKEN);
+    await rest.put(Routes.applicationCommands(CLIENT_ID), {
+      body: commands,
+    });
 
-    // Connect to mongodb
-    // await dbClient.connect();
+    console.log("Successfully reloaded application (/) commands.");
+  } catch (error) {
+    console.log("There was some error when setting up the slash commands. See below.");
+    console.error(error);
+  }
 
-    // const db = dbClient.db(DB_NAME);
-    // console.log("Logged in to MongoDB!");
+  try {
+    await discordClient.login(TOKEN);
+    console.log(`Logged in to Discord as ${discordClient?.user?.tag}!`);
+  } catch (error) {
+    console.log("There was some error when logging into Discord. See below.");
+    console.dir(error);
+  }
 
-    // Set up server, wait for webhooks
-    const server = Hapi.server({ port: PORT, host: "localhost" });
+  try {
+    await mongodbClient.connect();
+    console.log("Logged in to MongoDB!");
+  } catch (error) {
+    console.log("There was some error when connecting to MongoDB. See below.");
+    console.dir(error);
+  }
+
+  try {
+    const server = Hapi.server({ port: PORT, host: "0.0.0.0" });
+
     server.route({
       method: "GET",
       path: "/",
-      handler: (request: any, h: any) => {
-        return "Hello there!";
-      },
+      handler: () => "Hello there!",
     });
 
     server.route({
       method: "POST",
       path: "/",
-      handler: (request: any, h: any) => {
-        console.log(request, h);
-        return null;
-      },
+      handler: handleRequest,
     });
 
     await server.start();
     console.log("Server running on port", PORT);
   } catch (error) {
-    console.error(error);
+    console.log("There was some error setting up the web server. See below.");
+    console.dir(error);
   }
 }
-
-process.on("unhandledRejection", (error) => {
-  console.error(error);
-  process.exit(1);
-});
 
 main();

@@ -188,6 +188,7 @@ type PublicPayload = {
 
 function eventPublic(payload: PublicPayload): string {
   const repo = payload.repository.full_name;
+
   return `[**${repo}**] Has been made open source!`;
 }
 
@@ -234,12 +235,14 @@ function eventPush(payload: PushPayload): string {
   let message = "";
   const repo = payload.repository.full_name;
   const branch = payload.ref.split("/")[2];
+
   if (payload.commits.length === 1) {
     const commit = payload.commits[0];
     const name = commit.author.name;
     const commitMessage = commit.message;
     const sha = commit.id.substring(0, 7);
     const url = `https://github.com/${repo}/commit/${sha}`;
+
     message += `[**${repo}:${branch}**] 1 new commit by ${name}`;
     message += `\n${commitMessage} - ${name}`;
     message += `\n<${url}>`;
@@ -251,10 +254,12 @@ function eventPush(payload: PushPayload): string {
     for (let commit of commits) {
       const sha = commit.id.substring(0, 7);
       const url = `https://github.com/${repo}/commit/${sha}`;
+
       message += `\n${commit.message} - ${commit.author.name}`;
       message += `\n<${url}>`;
     }
   }
+
   return message;
 }
 
@@ -303,20 +308,38 @@ function eventWatch(payload: WatchPayload): string {
   return `[**${repo}**] Starred by ${user}`;
 }
 
-export default {
-  commit_comment: eventCommitComment,
-  create: eventCreate,
-  delete: eventDelete,
-  fork: eventFork,
-  gollum: eventGollum,
-  issue_comment: eventIssueComment,
-  issues: eventIssues,
-  member: eventMember,
-  public: eventPublic,
-  pull_request_review_comment: eventPullRequestReviewComment,
-  pull_request: eventPullRequest,
-  push: eventPush,
-  release: eventRelease,
-  status: eventStatus,
-  watch: eventWatch,
-};
+export function eventToMessage(eventName: string, payload: any) {
+  switch (eventName) {
+    case "commit_comment":
+      return eventCommitComment(payload);
+    case "create":
+      return eventCreate(payload);
+    case "delete":
+      return eventDelete(payload);
+    case "fork":
+      return eventFork(payload);
+    case "gollum":
+      return eventGollum(payload);
+    case "issue_comment":
+      return eventIssueComment(payload);
+    case "issues":
+      return eventIssues(payload);
+    case "member":
+      return eventMember(payload);
+    case "public":
+      return eventPublic(payload);
+    case "pull_request_review_comment":
+      return eventPullRequestReviewComment(payload);
+    case "pull_request":
+      return eventPullRequest(payload);
+    case "push":
+      return eventPush(payload);
+    case "release":
+      return eventRelease(payload);
+    case "status":
+      return eventStatus(payload);
+    case "watch":
+      return eventWatch(payload);
+  }
+  return null;
+}
