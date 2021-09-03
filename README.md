@@ -10,7 +10,7 @@ Version 1.0.0
 1. Add a webhook to your repository pointing to https://discordbotgithub.herokuapp.com. Select any events you would like to listen for.
     > To add a webhook, visit your repository on github.com, click the settings tab, then webhooks.
 2. Set the content type to application/json.
-3. Authorise the bot on your server by clicking [this link](https://discord.com/api/oauth2/authorize?client_id=193000403632128013&permissions=2048&scope=bot%20applications.commands).
+3. Authorise the bot on your server by clicking [this link](https://discord.com/api/oauth2/authorize?client_id=193000403632128013&permissions=18432&scope=bot%20applications.commands).
 4. Once the bot is active on your Discord server, you can use the slash commands listed below.
 
 ## About secrets
