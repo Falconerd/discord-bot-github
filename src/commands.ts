@@ -1,13 +1,18 @@
 import { Collection } from "mongodb";
 
-export async function add(repo: string, channelId: string, subscriptions: Collection): Promise<boolean> {
+export async function add(
+  repo: string,
+  channelId: string,
+  subscriptions: Collection,
+  secret?: string
+): Promise<boolean> {
   const exists = await subscriptions.findOne({ repo, channelId });
 
   if (exists) {
     return false;
   }
 
-  await subscriptions.insertOne({ repo, channelId });
+  await subscriptions.insertOne({ repo, channelId, secret });
   return true;
 }
 

@@ -1,7 +1,7 @@
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { Client, Intents, TextChannel, Permissions, CommandInteraction } from "discord.js";
-import { Document, MongoClient } from "mongodb";
+import { MongoClient } from "mongodb";
 import Hapi from "@hapi/hapi";
 import hmacSHA256 from "crypto-js/hmac-sha256";
 import { fixedTimeComparison } from "@hapi/cryptiles";
@@ -50,18 +50,19 @@ discordClient.on("interactionCreate", async (interaction) => {
   try {
     const repo = repoFromInteraction(interaction);
     const { channelId } = interaction;
+    const secret = interaction.options.getString("secret");
 
     switch (interaction.commandName) {
       case "dbg-add":
-        if (await add(repo, channelId, subscriptions)) {
-          await interaction.editReply(`Added a subscription for ${repo}.`);
+        if (await add(repo, channelId, subscriptions, secret)) {
+          await interaction.editReply(`Subscribed to ${repo}${secret ? " using a secret" : ""}.`);
         } else {
           await interaction.editReply("This channel has already subscribed to the repo.");
         }
         break;
       case "dbg-remove":
         await remove(repo, channelId, subscriptions);
-        await interaction.editReply(`Removed the subscription for ${repo}.`);
+        await interaction.editReply(`Unsubscribed from ${repo}.`);
         break;
       default:
         break;
