@@ -39,7 +39,7 @@ function repoFromInteraction(interaction: CommandInteraction): string {
 }
 
 function sanitize(text: string) {
-  return text.replace("@", "(at)");
+  return text.replace(/@/g, "(at)");
 }
 
 // Handle use of discord slash commands.
@@ -55,11 +55,14 @@ discordClient.on("interactionCreate", async (interaction) => {
     const repo = repoFromInteraction(interaction);
     const { channelId } = interaction;
     const secret = interaction.options.getString("secret");
+    const previews = interaction.options.getBoolean("previews");
 
     switch (interaction.commandName) {
       case "dbg-add":
-        if (await add(repo, channelId, subscriptions, secret)) {
-          await interaction.editReply(`Subscribed to ${repo}${secret ? " using a secret" : ""}.`);
+        if (await add(repo, channelId, subscriptions, secret, previews)) {
+          await interaction.editReply(
+            `Subscribed to ${repo}${secret ? " using a secret" : ""}${previews ? " with previews enabled" : ""}.`
+          );
         } else {
           await interaction.editReply("This channel has already subscribed to the repo.");
         }
@@ -108,10 +111,8 @@ async function handleRequest(request: Request) {
       });
     }
 
-    const channelIds = documents.map((item) => item.channelId);
-
-    for (let channelId of channelIds) {
-      const channel = discordClient.channels.cache.get(channelId) as TextChannel;
+    for (let document of documents) {
+      const channel = discordClient.channels.cache.get(document.channelId) as TextChannel;
 
       if (!channel) {
         continue;
@@ -125,7 +126,15 @@ async function handleRequest(request: Request) {
         continue;
       }
 
-      channel.send(sanitize(message));
+      const cleanedMessage = sanitize(message);
+
+      // TODO: Change this if more flags come into existence.
+      if (document.flags) {
+        const m = cleanedMessage.replace(/<http(.*)>/g, "http$1");
+        channel.send(m);
+      } else {
+        channel.send(sanitize(cleanedMessage));
+      }
     }
   }
 

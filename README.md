@@ -27,5 +27,7 @@ Commands all start with `/` and will give you tool-tips if you start typing in D
 
 Command | Description
 --------|------------
-`/dbg-add <org> <name> [secret]` | Subscribe the current channel to the repo webhook events. Optionally takes a secret.
+`/dbg-add <org> <name> [secret] [previews]` | Subscribe the current channel to the repo webhook events. Optionally takes a secret. Optionally enable link previews.
 `/dbg-remove <org> <name>` | Unsubscribe the current channel from the repo webhook events.
+
+> Previews will not display if your repo is set to private.
