@@ -4,8 +4,7 @@
   "scripts": {
     "dev": "npx ts-node src/index.ts",
     "build": "npx parcel build src/index.ts",
-    "start": "yarn build && node dist/index.js",
-    "heroku-postbuild": "yarn start"
+    "heroku-postbuild": "yarn build"
   },
   "dependencies": {
     "@discordjs/rest": "^0.1.0-canary.0",
