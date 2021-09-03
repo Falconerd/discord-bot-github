@@ -20,7 +20,7 @@ type Request = {
   };
 };
 
-const { DB_URL, DB_NAME, TOKEN, CLIENT_ID = "", PORT = 8080 } = process.env;
+const { DB_URL, DB_NAME, TOKEN, CLIENT_ID = "", PORT } = process.env;
 
 if (!DB_URL) process.exit(600);
 if (!DB_NAME) process.exit(601);
