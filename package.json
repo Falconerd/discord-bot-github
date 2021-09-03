@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "./node_modules/.bin/ts-node src/index.ts",
-    "build": "./node_modules/.bin/parcel build src/index.ts",
-    "start": "yarn install && yarn build && node dist/index.js"
+    "build": "yarn parcel build src/index.ts",
+    "start": "yarn build && node dist/index.js"
   },
   "dependencies": {
     "@discordjs/rest": "^0.1.0-canary.0",
