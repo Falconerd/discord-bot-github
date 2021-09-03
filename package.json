@@ -2,8 +2,8 @@
   "name": "discord-bot-github",
   "version": "1.0.0",
   "scripts": {
-    "dev": "./node_modules/.bin/ts-node src/index.ts",
-    "build": "yarn parcel build src/index.ts",
+    "dev": "npx ts-node src/index.ts",
+    "build": "npx parcel build src/index.ts",
     "start": "yarn build && node dist/index.js"
   },
   "dependencies": {

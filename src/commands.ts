@@ -4,7 +4,7 @@ export async function add(
   repo: string,
   channelId: string,
   subscriptions: Collection,
-  secret?: string
+  secret?: string | null
 ): Promise<boolean> {
   const exists = await subscriptions.findOne({ repo, channelId });
 
@@ -12,7 +12,11 @@ export async function add(
     return false;
   }
 
-  await subscriptions.insertOne({ repo, channelId, secret });
+  if (secret) {
+    await subscriptions.insertOne({ repo, channelId, secret });
+  } else {
+    await subscriptions.insertOne({ repo, channelId });
+  }
   return true;
 }
 
