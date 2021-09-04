@@ -84,7 +84,7 @@ async function handleRequest(request: Request) {
   const eventType = request.headers["x-github-event"];
   const signature = request.headers["x-hub-signature-256"];
 
-  const message = eventToMessage(eventType, request.payload);
+  let message = eventToMessage(eventType, request.payload);
 
   if (message) {
     const subscriptions = db.collection("subscriptions");
@@ -126,14 +126,24 @@ async function handleRequest(request: Request) {
         continue;
       }
 
-      const cleanedMessage = sanitize(message);
+      message = sanitize(message);
 
       // TODO: Change this if more flags come into existence.
       if (document.flags) {
-        const m = cleanedMessage.replace(/<http(.*)>/g, "http$1");
-        channel.send(m);
-      } else {
-        channel.send(sanitize(cleanedMessage));
+        message = message.replace(/<http(.*)>/g, "http$1");
+      }
+
+      // The Discord message character limit is 4000.
+      // TODO: Change this if the limit changes.
+      if (message.length > 4000) {
+        message = message.substring(0, 4000);
+      }
+
+      try {
+        await channel.send(message);
+      } catch (error) {
+        console.log("There was an error sending the Discord message. See below.");
+        console.dir(error);
       }
     }
   }
