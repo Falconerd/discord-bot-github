@@ -19,7 +19,7 @@ You can specify a secret value when subscribing to receive webhook events. Keep 
 
 Don't just enter your "default password" as the secret, use some random value, unrelated text, or best of all: [a hashed value](https://emn178.github.io/online-tools/sha256.html).
 
-> If anyone guesses your secret, they can also subscribe to your webhook events!
+> If anyone learns or guesses your secret, they can send fake webhook events!
 
 ## Usage
 
